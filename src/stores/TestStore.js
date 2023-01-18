@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { auth } from '../../firebaseConfig'
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 export const useTestStore = defineStore('TestStore', {
   state: () => ({
@@ -10,13 +11,13 @@ export const useTestStore = defineStore('TestStore', {
   }),
 
   getters: {
-    doubleCount (state) {
+    doubleCount(state) {
       return state.counter * 2
     }
   },
 
   actions: {
-    increment () {
+    increment() {
       this.counter++
     },
 
@@ -27,24 +28,23 @@ export const useTestStore = defineStore('TestStore', {
 
     async login(loginObj) {
       try {
-        await auth().signInWithEmailAndPassword(loginObj.email, loginObj.password);
-        console.log('true');
 
         return true;
-      } catch (err) {
-        commit('setError', err);
+      } catch (error) {
+        console.warn({error});
         throw err;
       }
     },
 
 
-    async register(registerObj) {
+    async register({email, password }) {
       try {
         // console.log('[TestStore]', registerObj.email, registerObj.password)
-
-        const res = await auth.createUserWithEmailAndPassword(registerObj.email, registerObj.password)
-      } catch (err) {
-        console.log(err)
+        const auth = getAuth();
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.warn({ userCredential });
+      } catch (error) {
+        console.error({error})
       }
 
     }
