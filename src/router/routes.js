@@ -6,15 +6,21 @@ const routes = [
     children: [
       { path: '', component: () => import('src/pages/Categories.vue') },
       { path: 'subcategories', component: () => import('pages/Subcategories.vue') },
-      { path: 'products', component: () => import('pages/Products.vue')}
+      { path: 'products', component: () => import('pages/Products.vue') }
     ]
   },
   {
-    path: '/admin',
+    path: '/login',
     component: () => import('layouts/EmptyLayout.vue'),
     children: [
-      { path: '', name: "login", component: () => import('src/pages/Login.vue')},
-      { path: 'register', name: "register", component: () => import('src/pages/Register.vue')}
+      { path: '', name: "login", component: () => import('src/pages/Login.vue') },
+    ]
+  },
+  {
+    path: '/register',
+    component: () => import('layouts/EmptyLayout.vue'),
+    children: [
+      { path: '', name: "register", component: () => import('src/pages/Register.vue') }
     ]
   },
 

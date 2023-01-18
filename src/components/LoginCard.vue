@@ -40,7 +40,7 @@
           <q-card-section>
             <p class="text-caption text-weight-light text-grey">
               Not reigistered?
-              <router-link to="/admin/register" class="text-secondary" style="text-decoration: none;">Create an Account</router-link>
+              <router-link to="/register" class="text-secondary" style="text-decoration: none;">Create an Account</router-link>
             </p>
           </q-card-section>
         </q-card>
@@ -67,7 +67,7 @@
     try {
       successLogin = await testStore.login(loginObj)
 
-      // $router.push('/');
+      $router.push('/');
       console.log('[LoginCard] successLogin', successLogin)
     } catch (e) {}
   }

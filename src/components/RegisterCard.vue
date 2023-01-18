@@ -48,7 +48,7 @@
           <q-card-section>
             <p class="text-caption text-weight-light text-grey">
               Already have an account ?
-              <router-link to="/admin" replace class="text-secondary" style="text-decoration: none;">
+              <router-link to="/login" replace class="text-secondary" style="text-decoration: none;">
                 Log in
               </router-link>
             </p>
