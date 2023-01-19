@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { useTestStore } from './stores/TestStore';
+import { useAuthStore } from './stores/authStore';
 
 // export default defineComponent({
 //   name: 'App'
@@ -11,9 +11,9 @@ import { useTestStore } from './stores/TestStore';
 
 export default {
   setup() {
-    const testStore = useTestStore()
+    const authStore = useAuthStore()
 
-    return {testStore}
+    return {authStore}
   }
 }
 

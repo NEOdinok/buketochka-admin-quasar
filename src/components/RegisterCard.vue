@@ -60,26 +60,35 @@
 </template>
 
 <script setup>
-  import { useTestStore } from '../stores/TestStore'
+  import { useAuthStore } from '../stores/authStore'
   import { ref } from 'vue';
 
-  const testStore = useTestStore()
+  import { app } from '../../firebaseConfig'
+  import { getFirestore, doc, setDoc } from "firebase/firestore";
+  import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+  const authStore = useAuthStore()
   const email = ref('')
   const password = ref('')
   const name = ref('')
-  const successRegister = false;
 
   const submitHandler = async () => {
-    const registerObj = {
-      email: email.value,
-      password: password.value,
-      name: name.value
-    }
-
     try {
-      successRegister = await testStore.register(registerObj)
-      console.log('[RegisterCard], successRegister', successRegister)
-    } catch (err) {}
+      const auth = getAuth(app)
+      const db = getFirestore(app)
+
+      createUserWithEmailAndPassword(auth, email.value, password.value, name.value).then((cred) => {
+        return setDoc(doc(db, "users", cred.user.uid), {
+          name: name.value,
+          email: email.value,
+          ordersCount: 0,
+          ordersAmount: 0
+        })
+      })
+      console.log('registered')
+    } catch (error) {
+      console.error({error})
+    }
   }
 
 </script>

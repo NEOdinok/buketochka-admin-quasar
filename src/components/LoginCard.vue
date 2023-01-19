@@ -50,26 +50,30 @@
 </template>
 
 <script setup>
-  import { useTestStore } from '../stores/TestStore'
+  import { useAuthStore} from '../stores/authStore'
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
 
-  const testStore = useTestStore()
+  import { app } from '../../firebaseConfig'
+  import { getAuth, signInWithEmailAndPassword} from "firebase/auth";
+
+  const authStore = useAuthStore()
   const email = ref('')
   const password = ref('')
-  const successLogin = false;
+  const router = useRouter()
 
   const submitHandler = async () => {
-    const loginObj = {
-      email: email.value,
-      password: password.value
-    }
+    const auth = getAuth(app);
 
-    try {
-      successLogin = await testStore.login(loginObj)
+    signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
+      console.log('[LoginCard] logged user', cred.user.uid)
+      console.log('[loginCard] call authStateChanged', authStore.getCurrentUserId())
 
-      $router.push('/');
-      console.log('[LoginCard] successLogin', successLogin)
-    } catch (e) {}
+      router.push({ path: '/' })
+    })
+    .catch((error) => {
+      throw error
+    });
   }
 </script>
 
