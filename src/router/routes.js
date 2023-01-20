@@ -3,6 +3,7 @@ const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
+    meta: {requiresAuth: true},
     children: [
       { path: '', component: () => import('src/pages/Categories.vue') },
       { path: 'subcategories', component: () => import('pages/Subcategories.vue') },

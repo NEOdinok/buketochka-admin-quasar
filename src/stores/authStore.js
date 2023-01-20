@@ -7,8 +7,8 @@ export const useAuthStore = defineStore('authStore', {
   state: () => ({
     counter: 0,
 
-    user: null,
-    authIsReady: false,
+    isLoggedIn: false,
+    userInfo: {},
   }),
 
   getters: {
@@ -25,16 +25,20 @@ export const useAuthStore = defineStore('authStore', {
     getCurrentUserId() {
       const auth = getAuth(app)
 
-      onAuthStateChanged(auth, (user) => {
-        console.log('[authStore] authStateChanged', user.uid)
+      const user = auth.currentUser
+      return user ? user.uid : null
 
-        if (user) {
-          return user.uid
-        } else {
-          return null
-        }
+      // works
+      // onAuthStateChanged(auth, (user) => {
+      //   console.log('[authStore] authStateChanged', user.uid)
 
-      })
+      //   if (user) {
+      //     return user.uid
+      //   } else {
+      //     return null
+      //   }
+
+      // })
     }
   }
 })

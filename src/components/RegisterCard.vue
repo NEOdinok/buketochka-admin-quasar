@@ -65,30 +65,46 @@
 
   import { app } from '../../firebaseConfig'
   import { getFirestore, doc, setDoc } from "firebase/firestore";
-  import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+  import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+  import { useRouter } from 'vue-router';
 
   const authStore = useAuthStore()
+  const router = useRouter()
   const email = ref('')
   const password = ref('')
   const name = ref('')
 
   const submitHandler = async () => {
-    try {
-      const auth = getAuth(app)
-      const db = getFirestore(app)
+  const auth = getAuth(app)
+  const db = getFirestore(app)
 
-      createUserWithEmailAndPassword(auth, email.value, password.value, name.value).then((cred) => {
-        return setDoc(doc(db, "users", cred.user.uid), {
-          name: name.value,
-          email: email.value,
-          ordersCount: 0,
-          ordersAmount: 0
-        })
+  createUserWithEmailAndPassword(auth, email.value, password.value, name.value)
+    .then((cred) => {
+      //create a record in firestore
+      return setDoc(doc(db, "users", cred.user.uid), {
+        name: name.value,
+        email: email.value,
+        ordersCount: 0,
+        ordersAmount: 0
       })
-      console.log('registered')
-    } catch (error) {
-      console.error({error})
-    }
+    })
+    .then(() => {
+      authStore.userInfo = {
+        name: name.value,
+        email: email.value
+      }
+      //set user insatnce data
+      return updateProfile(auth.currentUser, {
+        displayName: name.value,
+        email: email.value,
+      })
+    })
+    .then(() => {
+      router.push({ path: '/' })
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
   }
 
 </script>

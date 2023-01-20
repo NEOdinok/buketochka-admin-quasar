@@ -2,19 +2,25 @@
   <router-view />
 </template>
 
-<script>
+<script setup>
+import { onMounted, ref } from 'vue';
+import { app } from '../firebaseConfig'
+import { getAuth, onAuthStateChanged } from '@firebase/auth';
 import { useAuthStore } from './stores/authStore';
 
-// export default defineComponent({
-//   name: 'App'
-// })
+const authStore = useAuthStore()
 
-export default {
-  setup() {
-    const authStore = useAuthStore()
-
-    return {authStore}
-  }
-}
+onMounted(() => {
+  const auth = getAuth(app)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authStore.isLoggedIn = true
+      console.log('[App.vue] accesing isLoggedIn from store', authStore.isLoggedIn)
+    } else {
+      authStore.isLoggedIn = false
+      console.log('[App.vue] accesing isLoggedIn from store', authStore.isLoggedIn)
+    }
+  })
+})
 
 </script>

@@ -55,7 +55,7 @@
   import { useRouter } from 'vue-router';
 
   import { app } from '../../firebaseConfig'
-  import { getAuth, signInWithEmailAndPassword} from "firebase/auth";
+  import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence} from "firebase/auth";
 
   const authStore = useAuthStore()
   const email = ref('')
@@ -65,15 +65,33 @@
   const submitHandler = async () => {
     const auth = getAuth(app);
 
-    signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
-      console.log('[LoginCard] logged user', cred.user.uid)
-      console.log('[loginCard] call authStateChanged', authStore.getCurrentUserId())
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        return signInWithEmailAndPassword(auth, email.value, password.value)
+      })
+      .then((cred) => {
+        authStore.userInfo = {
+          name: cred.user.displayName,
+          email: cred.user.email
+        }
+      })
+      .then(() => {
+        router.push({ path: '/' })
+      })
+      .catch((error) => {
 
-      router.push({ path: '/' })
-    })
-    .catch((error) => {
-      throw error
-    });
+      });
+
+    // signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
+    //   authStore.userInfo = {
+    //     name: cred.user.displayName,
+    //     email: cred.user.email
+    //   }
+    //   router.push({ path: '/' })
+    // })
+    // .catch((error) => {
+    //   throw error
+    // });
   }
 </script>
 

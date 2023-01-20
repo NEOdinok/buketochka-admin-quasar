@@ -27,7 +27,10 @@
                 <img src="https://cdn.quasar.dev/img/boy-avatar.png">
               </q-avatar>
 
-              <div class="text-subtitle1 q-mt-md q-mb-xs">John Doe</div>
+              <div class="items-right">
+                <div class="text-subtitle1 q-mt-md q-mb-xs">{{ userName }}</div>
+                <div class="text-subtitle1 q-mb-md">{{ userEmail }}</div>
+              </div>
 
               <q-btn
                 color="primary"
@@ -35,8 +38,10 @@
                 push
                 size="sm"
                 v-close-popup
+                @click="handleSighOut"
               />
             </div>
+
           </div>
         </q-btn-dropdown>
       </q-toolbar>
@@ -78,8 +83,11 @@
 
 <script>
 import { date } from 'quasar'
-import { computed, ref, onMounted } from 'vue'
-import { useRoute } from "vue-router"
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from "vue-router"
+import { app } from '../../firebaseConfig'
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useAuthStore } from '../stores/authStore'
 
 const menuList = [
   {
@@ -106,6 +114,12 @@ export default {
   setup () {
     const leftDrawerOpen = ref(false)
     const route = useRoute()
+    const router = useRouter()
+    const auth = getAuth(app)
+    const userName = ref('no user')
+    const userEmail = ref('no user')
+    const authStore = useAuthStore()
+
     const pathObj = {
       '/products': 'Products',
       '/subcategories': 'Subcategories',
@@ -119,16 +133,41 @@ export default {
 
     const headerTitle = computed(() => pathObj[route.path])
 
+    const handleSighOut = () => {
+      signOut(auth).then(() => {
+        //clear info
+        authStore.userInfo = {}
+        router.push({ path: '/login' })
+      }).catch((error) => {
+        throw error;
+      });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userName.value = user.displayName
+        userEmail.value = user.email
+      } else {
+        //
+      }
+    });
+
     return {
       headerDate,
       headerTitle,
       leftDrawerOpen,
+      onAuthStateChanged,
+      userName,
+      userEmail,
+      handleSighOut,
+      authStore,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
       },
       // drawer: ref(true),
       menuList
     }
+
   }
 }
 </script>
