@@ -72,7 +72,8 @@
       .then((cred) => {
         authStore.userInfo = {
           name: cred.user.displayName,
-          email: cred.user.email
+          email: cred.user.email,
+          uid: cred.user.uid
         }
       })
       .then(() => {

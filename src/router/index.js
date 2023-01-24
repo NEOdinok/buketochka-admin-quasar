@@ -28,11 +28,29 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE)
   })
 
-  //persistance, onAuthSTateChange
 
+  //persiatance
+  // const getCurrentUser = () => {
+  //   return new Promise((resolve, reject) => {
+  //     const removeListener = onAuthStateChanged(getAuth(app), (user) => {
+  //       removeListener()
+  //       resolve(user)
+  //     }, reject)
+  //   }),
+  // },
 
-  Router.beforeEach((to, from) => {
-    if (to.meta.requiresAuth && !getAuth(app).currentUser) {
+  const getCurrentUser = () => {
+    return new Promise((resolve, reject) => {
+      const removeListener = onAuthStateChanged(getAuth(app), (user) => {
+        removeListener()
+        resolve(user)
+      }, reject)
+    })
+  }
+
+  Router.beforeEach(async (to, from) => {
+    const temp = await getCurrentUser()
+    if (to.meta.requiresAuth && !temp) {
       return {
         path: '/login',
         query: { redirect: to.fullPath },
@@ -40,6 +58,6 @@ export default route(function (/* { store, ssrContext } */) {
     }
   })
 
-
   return Router
 })
+

@@ -88,6 +88,7 @@ import { useRoute, useRouter } from "vue-router"
 import { app } from '../../firebaseConfig'
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useAuthStore } from '../stores/authStore'
+import { useCatStore } from 'src/stores/catStore';
 
 const menuList = [
   {
@@ -119,6 +120,7 @@ export default {
     const userName = ref('no user')
     const userEmail = ref('no user')
     const authStore = useAuthStore()
+    const catStore = useCatStore()
 
     const pathObj = {
       '/products': 'Products',
@@ -137,6 +139,8 @@ export default {
       signOut(auth).then(() => {
         //clear info
         authStore.userInfo = {}
+        catStore.catSelect = {}
+
         router.push({ path: '/login' })
       }).catch((error) => {
         throw error;

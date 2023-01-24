@@ -89,9 +89,11 @@
       })
     })
     .then(() => {
+      //create a record in store
       authStore.userInfo = {
         name: name.value,
-        email: email.value
+        email: email.value,
+        uid: auth.currentUser.uid
       }
       //set user insatnce data
       return updateProfile(auth.currentUser, {
