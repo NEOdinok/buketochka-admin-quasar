@@ -7,7 +7,7 @@
     <div class="q-gutter-md">
 
       <h5>Edit Product Category</h5>
-      <q-select v-model="selectedCategoryId" :options="testComputed" outlined label="Available categories"/>
+      <q-select v-model="selectedCategoryId" :options="createQselectOptions" outlined label="Available categories"/>
 
       <q-input v-model="name" outlined label="Edit name"/>
 
@@ -36,7 +36,7 @@ const props = defineProps({
   propCategories: Array,
 })
 
-const testComputed = computed(() => {
+const createQselectOptions = computed(() => {
   categoriesQselectOptions.value = props.propCategories.map(c => ({
     label: c.categoryName,
     value: c.categoryId
@@ -46,8 +46,6 @@ const testComputed = computed(() => {
 })
 
 watch(selectedCategoryId, (newCategoryId) => {
-  // console.log('new id', newCategoryId.value)
-  // console.log('searching in props.propCategories',props.propCategories)
   let res = props.propCategories.find(c => c.categoryId === newCategoryId.value)
 
   name.value = res.categoryName

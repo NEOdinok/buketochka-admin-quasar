@@ -38,10 +38,6 @@ const categoryRoute = ref('')
 const auth = getAuth(app)
 const db = getFirestore(app)
 
-defineProps({
-
-})
-
 const createCategory = async () => {
   addDoc(collection(db, "users", auth.currentUser.uid, "categories"), {
     categoryName: categoryName.value,

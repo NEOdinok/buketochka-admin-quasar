@@ -3,9 +3,9 @@ import CreateCategory from '../components/CreateCategory.vue'
 import EditCategory from '../components/EditCategory.vue'
 import { onMounted } from 'vue';
 import { getDocs, collection, getFirestore, doc } from "firebase/firestore";
-import {app} from '../../firebaseConfig'
+import { app } from '../../firebaseConfig'
 import { getAuth } from '@firebase/auth';
-import { ref, watch, computed, isProxy, toRaw } from 'vue';
+import { ref, isProxy, toRaw } from 'vue';
 
 /**array of raw objects */
 const pulledCategoriesArray = ref([])
