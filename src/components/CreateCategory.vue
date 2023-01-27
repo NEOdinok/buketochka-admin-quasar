@@ -39,31 +39,21 @@ const auth = getAuth(app)
 const db = getFirestore(app)
 
 defineProps({
-  categoryList: {
-    type: Array,
-    default() {
-      return []
-    }
-  },
-  categoryRoutes: {
-    type: Array,
-    default() {
-      return []
-    }
-  },
+
 })
 
 const createCategory = async () => {
-  setDoc(doc(db, "users", auth.currentUser.uid, "categories", categoryName.value), {
+  addDoc(collection(db, "users", auth.currentUser.uid, "categories"), {
     categoryName: categoryName.value,
     categoryRoute: categoryRoute.value
-    // test: "test"
-  }).then(() => {
+  })
+  .then((docRef) => {
     emit('createdCategory')
   })
-  .catch((err) => {
+  .catch((error) => {
 
   })
+
 }
 
 </script>

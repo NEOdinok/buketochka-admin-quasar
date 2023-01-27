@@ -7,12 +7,11 @@
     <div class="q-gutter-md">
 
       <h5>Edit Product Category</h5>
-      <p v-if="!categoryList.length">Categories empty. Create the first one</p>
-      <q-select v-else :options="categoryList" v-model="select" outlined label="Available categories"/>
+      <q-select v-model="selectedCategoryId" :options="testComputed" outlined label="Available categories"/>
 
-      <q-input v-model="categoryRoutes.select" outlined label="Edit name"/>
+      <q-input v-model="name" outlined label="Edit name"/>
 
-      <q-input outlined label="Edit route" />
+      <q-input v-model="route" outlined label="Edit route" />
 
       <div class="row">
         <div class="q-gutter-xs">
@@ -26,25 +25,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, toRaw, watch  } from 'vue';
 
-const select = ref(null)
+const selectedCategoryId= ref(null)
+const categoriesQselectOptions = ref([])
+const name = ref(null)
+const route = ref(null)
 
-defineProps({
-  categoryList: {
-    type: Array,
-    default() {
-      return []
-    }
-  },
-  categoryRoutes: {
-    type: Array,
-    default() {
-      return []
-    }
-  },
-
+const props = defineProps({
+  propCategories: Array,
 })
+
+const testComputed = computed(() => {
+  categoriesQselectOptions.value = props.propCategories.map(c => ({
+    label: c.categoryName,
+    value: c.categoryId
+  }))
+
+  return categoriesQselectOptions.value
+})
+
+watch(selectedCategoryId, (newCategoryId) => {
+  // console.log('new id', newCategoryId.value)
+  // console.log('searching in props.propCategories',props.propCategories)
+  let res = props.propCategories.find(c => c.categoryId === newCategoryId.value)
+
+  name.value = res.categoryName
+  route.value = res.categoryRoute
+})
+
 </script>
 
 <style>

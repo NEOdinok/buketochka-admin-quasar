@@ -5,26 +5,14 @@ import { onMounted } from 'vue';
 import { getDocs, collection, getFirestore, doc } from "firebase/firestore";
 import {app} from '../../firebaseConfig'
 import { getAuth } from '@firebase/auth';
-// import { useCatStore } from 'src/stores/catStore';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, isProxy, toRaw } from 'vue';
 
-const categoryList = ref([])
-const categoryRoutes = ref([])
+/**array of raw objects */
+const pulledCategoriesArray = ref([])
+const propCategories = ref([])
 
 onMounted(async () => {
-
   await pullDocsFromFirebase()
-  // getDocs(collection(db, "users", auth.currentUser.uid, "categories"))
-  // .then((snapShot) => {
-  //   categoryList.value = snapShot.docs.map((doc) => ({
-  //     label: doc.data().categoryName,
-  //     value: doc.data().categoryName
-  //   }))
-  //   categoryRoutes.value = snapShot.docs.map((doc) => ({
-  //     label: doc.data().categoryName,
-  //     value: doc.data().categoryRoute
-  //   }))
-  // })
 })
 
 const pullDocsFromFirebase = async () => {
@@ -33,14 +21,25 @@ const pullDocsFromFirebase = async () => {
 
   getDocs(collection(db, "users", auth.currentUser.uid, "categories"))
   .then((snapShot) => {
-    categoryList.value = snapShot.docs.map((doc) => ({
-      label: doc.data().categoryName,
-      value: doc.data().categoryName
-    }))
-    categoryRoutes.value = snapShot.docs.map((doc) => ({
-      label: doc.data().categoryName,
-      value: doc.data().categoryRoute
-    }))
+    snapShot.forEach((doc) => {
+
+      pulledCategoriesArray.value.push({
+        categoryId: doc.id,
+        categoryName: doc.data().categoryName,
+        categoryRoute: doc.data().categoryRoute
+      })
+    })
+  })
+  .then(() => {
+    if (isProxy(pulledCategoriesArray.value)) {
+      propCategories.value = pulledCategoriesArray.value
+      return toRaw(pulledCategoriesArray.value)
+    } else {
+      return pulledCategoriesArray.value
+    }
+  })
+  .catch((err) => {
+
   })
 }
 
@@ -50,10 +49,10 @@ const pullDocsFromFirebase = async () => {
   <q-page>
     <div class="row justify-center">
       <div class="col-12 col-sm-6 col-md-4">
-        <CreateCategory v-on:createdCategory="pullDocsFromFirebase" :categoryRoutes="categoryRoutes" />
+        <CreateCategory v-on:createdCategory="pullDocsFromFirebase" />
       </div>
       <div class="col-12 col-sm-6 col-md-4">
-        <EditCategory :categoryList="categoryList" :categoryRoutes="categoryRoutes"/>
+        <EditCategory :propCategories="propCategories"/>
       </div>
     </div>
   </q-page>
