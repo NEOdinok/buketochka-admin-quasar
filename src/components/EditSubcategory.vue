@@ -2,7 +2,7 @@
 import { ref, computed, watch, toRaw, isProxy } from 'vue';
 import { app } from '../../firebaseConfig'
 import { getAuth } from '@firebase/auth';
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 
 const auth = getAuth(app)
 const db = getFirestore(app)
@@ -81,6 +81,24 @@ const pullSubcategoryDocsFromFirebase = async (categoryId) => {
   })
 }
 
+const deleteSubCategory = async () => {
+  console.log('delete category')
+}
+
+const updateSubCategory = async () => {
+  const subCategoryRef = doc(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories", toRaw(selectedSubCategoryId.value).value);
+
+  //await
+  setDoc(subCategoryRef, {
+    subCategoryId: selectedSubCategoryId.value,
+    subCategoryName: subCategoryName.value,
+    subCategoryRoute: subCategoryRoute.value
+  })
+  .then(async () => {
+    await pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
+  })
+}
+
 </script>
 
 <template>
@@ -98,8 +116,26 @@ const pullSubcategoryDocsFromFirebase = async (categoryId) => {
 
       <div class="row">
         <div class="q-gutter-xs">
-          <q-btn unelevated rounded align="between" icon-right="sync" color="primary" label="Update" />
-          <q-btn unelevated rounded align="between" color="primary" icon-right="delete" label="Delete" />
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            icon-right="sync"
+            color="primary"
+            label="Update"
+            @click="updateSubCategory"
+          />
+
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            color="primary"
+            icon-right="delete"
+            label="Delete"
+            @click="deleteSubCategory"
+          />
+
         </div>
       </div>
     </div>
