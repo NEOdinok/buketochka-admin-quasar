@@ -82,7 +82,8 @@ const pullSubcategoryDocsFromFirebase = async (categoryId) => {
 }
 
 const deleteSubCategory = async () => {
-  console.log('delete category')
+  await deleteDoc(doc(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories", toRaw(selectedSubCategoryId.value).value));
+  console.log('deleted')
 }
 
 const updateSubCategory = async () => {
@@ -95,7 +96,10 @@ const updateSubCategory = async () => {
     subCategoryRoute: subCategoryRoute.value
   })
   .then(async () => {
-    await pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
+    pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
+    .then(async () => {
+      await pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
+    })
   })
 }
 
