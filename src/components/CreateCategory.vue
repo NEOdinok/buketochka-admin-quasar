@@ -39,17 +39,22 @@ const auth = getAuth(app)
 const db = getFirestore(app)
 
 const createCategory = async () => {
-  addDoc(collection(db, "users", auth.currentUser.uid, "categories"), {
-    categoryName: categoryName.value,
-    categoryRoute: categoryRoute.value
-  })
-  .then((docRef) => {
-    emit('createdCategory')
-  })
-  .catch((error) => {
+  if (!categoryName.value || !categoryRoute.value) {
+    console.log('fill in all the fields')
+  } else {
+    addDoc(collection(db, "users", auth.currentUser.uid, "categories"), {
+      categoryName: categoryName.value,
+      categoryRoute: categoryRoute.value
+    })
+    .then((docRef) => {
+      categoryName.value = ''
+      categoryRoute.value = ''
+      emit('createdCategory')
+    })
+    .catch((error) => {
 
-  })
-
+    })
+  }
 }
 
 </script>

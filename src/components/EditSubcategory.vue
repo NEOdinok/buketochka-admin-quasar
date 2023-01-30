@@ -1,13 +1,19 @@
 <script setup>
-import { ref, computed, watch, toRaw, isProxy } from 'vue';
+import { ref, computed, watch, toRaw, isProxy, toRef } from 'vue';
 import { app } from '../../firebaseConfig'
 import { getAuth } from '@firebase/auth';
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 
+const emit = defineEmits([
+  'updatedSubcategory',
+  'selectedNewParentCategory',
+  'deletedSubcategory',
+])
+
 const auth = getAuth(app)
 const db = getFirestore(app)
 
-const pulledSubcategoryDocs = ref([])
+// const pulledSubcategoryDocs = ref([])
 
 const selectedCategoryId = ref('')
 const categoriesQselectOptions = ref([])
@@ -19,18 +25,43 @@ const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
 
 const props = defineProps({
-  propCategories: Array,
+  propCategories: {
+    type: Array,
+    default: []
+  },
+
+  propSubcategories: {
+    type: Array,//за ним хочу следить
+    default: []
+  }
+})
+
+watch(() => props.propSubcategories, (newValue, oldValue) => {
+  subCategoriesQselectOptions.value = props.propSubcategories.map(c => ({
+    label: c.subCategoryName,
+    value: c.subCategoryId
+  }))
 })
 
 watch(selectedCategoryId, (newCategoryId) => {
-  pullSubcategoryDocsFromFirebase(newCategoryId.value)
+  subCategoriesQselectOptions.value = []
+  selectedSubCategoryId.value = ''
+  subCategoryName.value = ''
+  subCategoryRoute.value = ''
+
+  emit('selectedNewParentCategory', newCategoryId)
 })
 
 watch(selectedSubCategoryId, (newSubCategoryId) => {
-  let res = pulledSubcategoryDocs.value.find(c => c.subCategoryId === newSubCategoryId.value)
+  if (!newSubCategoryId.value) {
+    return
+  } else {
+    // let res = pulledSubcategoryDocs.value.find(c => c.subCategoryId === newSubCategoryId.value)
+    let res = props.propSubcategories.find(c => c.subCategoryId === newSubCategoryId.value)
 
-  subCategoryName.value = res.subCategoryName
-  subCategoryRoute.value = res.subCategoryRoute
+    subCategoryName.value = res.subCategoryName
+    subCategoryRoute.value = res.subCategoryRoute
+  }
 })
 
 const createCategoriesQselectOptions = computed(() => {
@@ -42,48 +73,18 @@ const createCategoriesQselectOptions = computed(() => {
   return categoriesQselectOptions.value
 })
 
-const createSubcategoriesQselectOptions = computed(() => {
-
-  subCategoriesQselectOptions.value = pulledSubcategoryDocs.value.map(c => ({
-    label: c.subCategoryName,
-    value: c.subCategoryId
-  }))
-
+const returnSubcategoriesQselectOptions = computed(() => {
   return subCategoriesQselectOptions.value
 })
 
-const pullSubcategoryDocsFromFirebase = async (categoryId) => {
-  const db = getFirestore(app)
-  const auth = getAuth(app)
-  pulledSubcategoryDocs.value = []
-
-  getDocs(collection(db, "users", auth.currentUser.uid, "categories", categoryId, "subcategories"))
-  .then((snapShot) => {
-    snapShot.forEach((doc) => {
-
-      pulledSubcategoryDocs.value.push({
-        subCategoryId: doc.id,
-        subCategoryName: doc.data().subCategoryName,
-        subCategoryRoute: doc.data().subCategoryRoute
-      })
-
-    })
-  })
-  .then(() => {
-    if (isProxy(pulledSubcategoryDocs.value)) {
-      return toRaw(pulledSubcategoryDocs.value)
-    } else {
-      return pulledSubcategoryDocs.value
-    }
-  })
-  .catch((err) => {
-
-  })
-}
-
 const deleteSubCategory = async () => {
   await deleteDoc(doc(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories", toRaw(selectedSubCategoryId.value).value));
-  console.log('deleted')
+  subCategoriesQselectOptions.value = []
+  selectedSubCategoryId.value = ''
+  subCategoryName.value = ''
+  subCategoryRoute.value = ''
+
+  emit('deletedSubcategory', selectedCategoryId.value)
 }
 
 const updateSubCategory = async () => {
@@ -96,53 +97,61 @@ const updateSubCategory = async () => {
     subCategoryRoute: subCategoryRoute.value
   })
   .then(async () => {
-    pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
-    .then(async () => {
-      await pullSubcategoryDocsFromFirebase(toRaw(selectedCategoryId.value).value)
-    })
+    emit('updatedSubcategory', selectedCategoryId.value)
   })
 }
 
+watch(() => props.propCategories, (newValue, oldValue) => {
+  console.log('propCategories changed', props.propCategories)
+})
 </script>
 
 <template>
-  <div class="edit-category-wrap q-pa-md">
-    <div class="q-gutter-md">
-      <h5>Edit Product Subcategory</h5>
+  <div class="edit-category-wrap q-gutter-md q-mt-xl">
+      <div class="q-gutter-md">
+        <h5>Edit Product Subcateg</h5>
+      </div>
 
-      <q-select v-model="selectedCategoryId" :options="createCategoriesQselectOptions" outlined label="Parent category route" />
+      <p v-if="!propCategories.length">No parent categories</p>
 
-      <q-select v-model="selectedSubCategoryId" :options="createSubcategoriesQselectOptions" outlined label="Subcategory" />
+      <div class="q-gutter-md" v-else>
+        <q-select v-model="selectedCategoryId" :options="createCategoriesQselectOptions" outlined label="Parent category route" />
+      </div>
 
-      <q-input v-model="subCategoryName" outlined label="Edit name"/>
+      <p v-if="!propSubcategories.length">No subcategories</p>
 
-      <q-input v-model="subCategoryRoute"  outlined label="Edit route" />
+      <div class="q-gutter-md" v-else>
+        <q-select v-model="selectedSubCategoryId" :options="returnSubcategoriesQselectOptions" outlined label="Subcategory" />
 
-      <div class="row">
-        <div class="q-gutter-xs">
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            icon-right="sync"
-            color="primary"
-            label="Update"
-            @click="updateSubCategory"
-          />
+        <q-input v-model="subCategoryName" outlined label="Edit name"/>
 
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            color="primary"
-            icon-right="delete"
-            label="Delete"
-            @click="deleteSubCategory"
-          />
+        <q-input v-model="subCategoryRoute"  outlined label="Edit route" />
 
+        <div class="row">
+          <div class="q-gutter-xs">
+            <q-btn
+              unelevated
+              rounded
+              align="between"
+              icon-right="sync"
+              color="primary"
+              label="Update"
+              @click="updateSubCategory"
+            />
+
+            <q-btn
+              unelevated
+              rounded
+              align="between"
+              color="primary"
+              icon-right="delete"
+              label="Delete"
+              @click="deleteSubCategory"
+            />
+          </div>
         </div>
       </div>
-    </div>
+
   </div>
 </template>
 

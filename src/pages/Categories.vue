@@ -5,7 +5,7 @@ import { onMounted } from 'vue';
 import { getDocs, collection, getFirestore, doc } from "firebase/firestore";
 import { app } from '../../firebaseConfig'
 import { getAuth } from '@firebase/auth';
-import { ref, isProxy, toRaw } from 'vue';
+import { ref, isProxy, toRaw, watch } from 'vue';
 
 /**array of raw objects */
 const pulledCategoriesArray = ref([])
@@ -32,16 +32,23 @@ const pullDocsFromFirebase = async () => {
   })
   .then(() => {
     if (isProxy(pulledCategoriesArray.value)) {
-      propCategories.value = pulledCategoriesArray.value
-      return toRaw(pulledCategoriesArray.value)
+      console.log('[Categories.vue] pulled docs', toRaw(pulledCategoriesArray.value))
+      propCategories.value = toRaw(pulledCategoriesArray.value)
+      pulledCategoriesArray.value = []
     } else {
-      return pulledCategoriesArray.value
+      console.log('[Categories.vue] pulled docs', pulledCategoriesArray.value)
+      propCategories.value = pulledCategoriesArray.value
+      pulledCategoriesArray.value = []
     }
   })
   .catch((err) => {
 
   })
 }
+
+watch(propCategories, (newProp) => {
+  console.log('[Categories.vue] passing new category prop to child', newProp)
+})
 
 </script>
 

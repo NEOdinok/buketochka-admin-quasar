@@ -15,10 +15,8 @@ onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       authStore.isLoggedIn = true
-      console.log('[App.vue] accesing isLoggedIn from store', authStore.isLoggedIn)
     } else {
       authStore.isLoggedIn = false
-      console.log('[App.vue] accesing isLoggedIn from store', authStore.isLoggedIn)
     }
   })
 })
