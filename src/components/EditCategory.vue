@@ -8,6 +8,7 @@ const selectedCategoryId= ref(null)
 const categoriesQselectOptions = ref([])
 const categoryName = ref(null)
 const categoryRoute = ref(null)
+const confirm = ref(false)
 
 const emit = defineEmits([
   'updatedCategory',
@@ -36,17 +37,29 @@ const updateCategory = async () => {
 }
 
 const deleteCategory = async () => {
-  try {
-    await deleteCategoryFromFirebase(selectedCategoryId.value)
+  confirm.value = false
 
-    categoriesQselectOptions.value = []
-    selectedCategoryId.value = ''
-    categoryName.value = ''
-    categoryRoute.value = ''
+  if (!confirm.value) {
+    try {
+      await deleteCategoryFromFirebase(selectedCategoryId.value)
 
-    emit('deletedCategory', selectedCategoryId.value)
-  } catch (error) {
-    console.warn({ error })
+      categoriesQselectOptions.value = []
+      selectedCategoryId.value = ''
+      categoryName.value = ''
+      categoryRoute.value = ''
+
+      emit('deletedCategory', selectedCategoryId.value)
+    } catch (error) {
+      console.warn({ error })
+    }
+  }
+}
+
+const handleModal = () => {
+  if (!selectedCategoryId.value) {
+    console.log('no category selected')
+  } else {
+    confirm.value = true
   }
 }
 
@@ -112,11 +125,31 @@ watch(selectedCategoryId, (newCategoryId) => {
             color="primary"
             icon-right="delete"
             label="Delete"
-            @click="deleteCategory"
+            @click="handleModal"
           />
         </div>
       </div>
 
+      <q-dialog v-model="confirm" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="error" color="red" text-color="white" />
+          <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedCategoryId.label }} ?</b></span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
+          <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
+          <q-btn
+            flat
+            label="Yes"
+            color="primary"
+            v-close-popup
+            @click="deleteCategory"
+          />
+        </q-card-actions>
+      </q-card>
+      </q-dialog>
     </div>
   </div>
 </template>

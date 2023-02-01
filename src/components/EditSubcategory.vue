@@ -10,7 +10,6 @@ const emit = defineEmits([
   'selectedNewParentCategory',
   'deletedSubcategory',
 ])
-
 const selectedCategoryId = ref('')
 const categoriesQselectOptions = ref([])
 
@@ -19,6 +18,16 @@ const subCategoriesQselectOptions = ref([])
 
 const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
+
+const confirm = ref(false)
+
+const handleModal = () => {
+  if (!selectedSubCategoryId.value) {
+    console.log('no category selected')
+  } else {
+    confirm.value = true
+  }
+}
 
 const props = defineProps({
   categories: {
@@ -81,17 +90,21 @@ watch(() => props.categories, () => {
 })
 
 const deleteSubCategory = async () => {
-  try {
-    await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubCategoryId.value)
+  confirm.value = false
 
-    subCategoriesQselectOptions.value = []
-    selectedSubCategoryId.value = ''
-    subCategoryName.value = ''
-    subCategoryRoute.value = ''
+  if (!confirm.value) {
+    try {
+      await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubCategoryId.value)
 
-    emit('deletedSubcategory', selectedCategoryId.value)
-  } catch(error) {
-    console.warn({error})
+      subCategoriesQselectOptions.value = []
+      selectedSubCategoryId.value = ''
+      subCategoryName.value = ''
+      subCategoryRoute.value = ''
+
+      emit('deletedSubcategory', selectedCategoryId.value)
+    } catch(error) {
+      console.warn({error})
+    }
   }
 }
 
@@ -154,10 +167,31 @@ const updateSubCategory = async () => {
               color="primary"
               icon-right="delete"
               label="Delete"
-              @click="deleteSubCategory"
+              @click="handleModal"
             />
           </div>
         </div>
+
+        <q-dialog v-model="confirm" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar icon="error" color="red" text-color="white" />
+            <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedSubCategoryId.label }} ?</b></span>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
+            <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
+            <q-btn
+              flat
+              label="Yes"
+              color="primary"
+              v-close-popup
+              @click="deleteSubCategory"
+            />
+          </q-card-actions>
+        </q-card>
+        </q-dialog>
       </div>
 
   </div>
