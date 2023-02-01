@@ -48,7 +48,7 @@ watch(() => props.subcategories, () => {
     }
 
     selectedSubCategoryId.value = updatedSubcategory
-    subcategoryIdBeforeUpdate.value = []
+    subcategoryIdBeforeUpdate.value = ''
   }
 })
 

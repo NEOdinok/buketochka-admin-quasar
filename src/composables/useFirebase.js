@@ -99,10 +99,26 @@ export function useFirebase() {
     }
   }
 
+  async function deleteCategoryFromFirebase(categoryId) {
+    try {
+      //first delete all subcategories
+      const snapShot = await getDocs(collection(db, "users", auth.currentUser.uid, "categories", categoryId.value, "subcategories"))
+
+      snapShot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "categories", categoryId.value))
+    } catch (error) {
+      console.warn({ error })
+    }
+  }
+
   return {
     getCategoryDocsFromFirebase,
     updateCategoryInFirebase,
     createCategoryInFirebase,
+    deleteCategoryFromFirebase,
     createSubcategoryInFirebase,
     getSubcategoryDocsFromFirebase,
     deleteSubcategoryFromFirebase,

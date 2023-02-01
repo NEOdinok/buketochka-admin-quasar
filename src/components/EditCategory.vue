@@ -2,8 +2,8 @@
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 
-const { updateCategoryInFirebase } = useFirebase()
-const categoryIdBeforeUpdate= ref('')
+const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
+const categoryIdBeforeUpdate = ref('')
 const selectedCategoryId= ref(null)
 const categoriesQselectOptions = ref([])
 const categoryName = ref(null)
@@ -11,6 +11,7 @@ const categoryRoute = ref(null)
 
 const emit = defineEmits([
   'updatedCategory',
+  'deletedCategory'
 ])
 
 const props = defineProps({
@@ -26,21 +27,27 @@ const updateCategory = async () => {
       categoryName: categoryName.value,
       categoryRoute: categoryRoute.value
     }
-
     categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
-
     await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
-
     emit('updatedCategory', selectedCategoryId.value)
-
   } catch(error) {
     console.warn({error})
   }
-
 }
 
 const deleteCategory = async () => {
-  console.log('delete a category')
+  try {
+    await deleteCategoryFromFirebase(selectedCategoryId.value)
+
+    categoriesQselectOptions.value = []
+    selectedCategoryId.value = ''
+    categoryName.value = ''
+    categoryRoute.value = ''
+
+    emit('deletedCategory', selectedCategoryId.value)
+  } catch (error) {
+    console.warn({ error })
+  }
 }
 
 watch(() => props.categories, () => {
@@ -58,7 +65,7 @@ watch(() => props.categories, () => {
     }
 
     selectedCategoryId.value = updatedCategory
-    categoryIdBeforeUpdate.value = []
+    categoryIdBeforeUpdate.value = ''
   }
 })
 

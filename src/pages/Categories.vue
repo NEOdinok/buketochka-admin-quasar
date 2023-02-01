@@ -27,8 +27,6 @@ async function categoriesHandler() {
   }
 }
 
-
-
 </script>
 
 <template>
@@ -44,6 +42,7 @@ async function categoriesHandler() {
         <EditCategory
         :categories="categories"
         @updatedCategory="categoriesHandler"
+        @deletedCategory="categoriesHandler"
         />
       </div>
     </div>
