@@ -1,51 +1,52 @@
 <script setup>
-import { ref, computed, toRaw } from 'vue';
-import { app } from '../../firebaseConfig'
-import { getAuth } from '@firebase/auth';
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { ref, watch } from 'vue';
+import { useFirebase } from 'src/composables/useFirebase';
 
+const { createSubcategoryInFirebase } = useFirebase()
 const emit = defineEmits(['createdSubcategory'])
-
 const selectedCategoryId= ref('')
 const categoriesQselectOptions = ref([])
-
-const auth = getAuth(app)
-const db = getFirestore(app)
-
 const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
 
 const props = defineProps({
-  propCategories: Array,
+  propCategories: {
+    type: Array,
+    default: []
+  },
+  categories: {
+    type: Array,
+    default: []
+  }
 })
 
-const createQselectOptions = computed(() => {
-  categoriesQselectOptions.value = props.propCategories.map(c => ({
+watch(() => props.categories, () => {
+  categoriesQselectOptions.value = props.categories.map(c => ({
     label: c.categoryName,
     value: c.categoryId
   }))
-
-  return categoriesQselectOptions.value
 })
 
 const createSubCategory = async () => {
-  if (!subCategoryName.value || !subCategoryRoute.value) {
-    console.log('fill in all the fields')
-  } else {
-    addDoc(collection(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories"), {
-      subCategoryName: subCategoryName.value,
-      subCategoryRoute: subCategoryRoute.value
-    })
-    .then((docRef) => {
-      subCategoryName.value = ''
-      subCategoryRoute.value = ''
-      emit('createdSubcategory', selectedCategoryId.value)
-    })
-    .catch((error) => {
+  try {
+    if (!subCategoryName.value || !subCategoryRoute.value) {
+      console.log('fill in all the fields')
+    } else {
+      const newSubcategory = {
+        subCategoryName: subCategoryName.value,
+        subCategoryRoute: subCategoryRoute.value
+      }
 
-    })
+      await createSubcategoryInFirebase(selectedCategoryId.value, newSubcategory)
+    }
+
+    subCategoryName.value = ''
+    subCategoryRoute.value = ''
+
+    emit('createdSubcategory', selectedCategoryId.value)
+  } catch (error) {
+    console.warn({ error })
   }
-
 }
 </script>
 
@@ -57,7 +58,7 @@ const createSubCategory = async () => {
       </div>
 
       <div class="q-gutter-md">
-        <q-select v-model="selectedCategoryId" outlined :options="createQselectOptions" label="Parent category route" />
+        <q-select v-model="selectedCategoryId" outlined :options="categoriesQselectOptions" label="Parent category route" />
 
         <q-input v-model="subCategoryName" outlined label="Subcategory name" />
 

@@ -14,50 +14,40 @@
         icon-right="check"
         color="primary"
         label="Create"
-        @click="createCategory"/>
+        @click="createCategory"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { useAuthStore} from '../stores/authStore'
-import { useCatStore } from '../stores/catStore'
-import { app } from '../../firebaseConfig'
-import { getAuth } from '@firebase/auth';
 import { ref } from 'vue';
-import { getFirestore, collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { useFirebase } from 'src/composables/useFirebase';
 
+const { createCategoryInFirebase } = useFirebase()
 const emit = defineEmits(['createdCategory'])
-
-const authStore = useAuthStore()
-const catStore = useCatStore()
-
 const categoryName = ref('')
 const categoryRoute = ref('')
-
-const auth = getAuth(app)
-const db = getFirestore(app)
 
 const createCategory = async () => {
   if (!categoryName.value || !categoryRoute.value) {
     console.log('fill in all the fields')
   } else {
-    addDoc(collection(db, "users", auth.currentUser.uid, "categories"), {
+    let newCategory = {
       categoryName: categoryName.value,
       categoryRoute: categoryRoute.value
-    })
-    .then((docRef) => {
-      categoryName.value = ''
-      categoryRoute.value = ''
-      emit('createdCategory')
-    })
-    .catch((error) => {
+    }
 
-    })
+    await createCategoryInFirebase(newCategory)
+
+    categoryName.value = ''
+    categoryRoute.value = ''
+
+    emit('createdCategory')
   }
 }
-
 </script>
 
 
-<style></style>
+<style>
+</style>

@@ -1,19 +1,15 @@
 <script setup>
-import { ref, computed, watch, toRaw, isProxy, toRef } from 'vue';
-import { app } from '../../firebaseConfig'
-import { getAuth } from '@firebase/auth';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { ref, watch, toRaw } from 'vue';
+import { useFirebase } from 'src/composables/useFirebase';
+const { deleteSubcategoryFromFirebase, updateSubcategoryInFirebase } = useFirebase()
+
+const subcategoryIdBeforeUpdate= ref('')
 
 const emit = defineEmits([
   'updatedSubcategory',
   'selectedNewParentCategory',
   'deletedSubcategory',
 ])
-
-const auth = getAuth(app)
-const db = getFirestore(app)
-
-// const pulledSubcategoryDocs = ref([])
 
 const selectedCategoryId = ref('')
 const categoriesQselectOptions = ref([])
@@ -25,22 +21,35 @@ const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
 
 const props = defineProps({
-  propCategories: {
+  categories: {
     type: Array,
     default: []
   },
 
-  propSubcategories: {
-    type: Array,//за ним хочу следить
+  subcategories: {
+    type: Array,
     default: []
-  }
+  },
+
 })
 
-watch(() => props.propSubcategories, (newValue, oldValue) => {
-  subCategoriesQselectOptions.value = props.propSubcategories.map(c => ({
+watch(() => props.subcategories, () => {
+  subCategoriesQselectOptions.value = props.subcategories.map(c => ({
     label: c.subCategoryName,
     value: c.subCategoryId
   }))
+
+  if (subcategoryIdBeforeUpdate.value) {
+    let res = props.subcategories.find(c => c.subCategoryId === subcategoryIdBeforeUpdate.value)
+
+    let updatedSubcategory = {
+      label: res.subCategoryName,
+      value: res.subCategoryId
+    }
+
+    selectedSubCategoryId.value = updatedSubcategory
+    subcategoryIdBeforeUpdate.value = []
+  }
 })
 
 watch(selectedCategoryId, (newCategoryId) => {
@@ -48,6 +57,7 @@ watch(selectedCategoryId, (newCategoryId) => {
   selectedSubCategoryId.value = ''
   subCategoryName.value = ''
   subCategoryRoute.value = ''
+  subcategoryIdBeforeUpdate.value = ''
 
   emit('selectedNewParentCategory', newCategoryId)
 })
@@ -56,54 +66,52 @@ watch(selectedSubCategoryId, (newSubCategoryId) => {
   if (!newSubCategoryId.value) {
     return
   } else {
-    // let res = pulledSubcategoryDocs.value.find(c => c.subCategoryId === newSubCategoryId.value)
-    let res = props.propSubcategories.find(c => c.subCategoryId === newSubCategoryId.value)
+    let res = props.subcategories.find(c => c.subCategoryId === newSubCategoryId.value)
 
     subCategoryName.value = res.subCategoryName
     subCategoryRoute.value = res.subCategoryRoute
   }
 })
 
-const createCategoriesQselectOptions = computed(() => {
-  categoriesQselectOptions.value = props.propCategories.map(c => ({
+watch(() => props.categories, () => {
+  categoriesQselectOptions.value = props.categories.map(c => ({
     label: c.categoryName,
     value: c.categoryId
   }))
-
-  return categoriesQselectOptions.value
-})
-
-const returnSubcategoriesQselectOptions = computed(() => {
-  return subCategoriesQselectOptions.value
 })
 
 const deleteSubCategory = async () => {
-  await deleteDoc(doc(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories", toRaw(selectedSubCategoryId.value).value));
-  subCategoriesQselectOptions.value = []
-  selectedSubCategoryId.value = ''
-  subCategoryName.value = ''
-  subCategoryRoute.value = ''
+  try {
+    await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubCategoryId.value)
 
-  emit('deletedSubcategory', selectedCategoryId.value)
+    subCategoriesQselectOptions.value = []
+    selectedSubCategoryId.value = ''
+    subCategoryName.value = ''
+    subCategoryRoute.value = ''
+
+    emit('deletedSubcategory', selectedCategoryId.value)
+  } catch(error) {
+    console.warn({error})
+  }
 }
 
 const updateSubCategory = async () => {
-  const subCategoryRef = doc(db, "users", auth.currentUser.uid, "categories", toRaw(selectedCategoryId.value).value, "subcategories", toRaw(selectedSubCategoryId.value).value);
+  try {
+    const newSubCategory = {
+      subCategoryId: toRaw(selectedSubCategoryId.value).value,
+      subCategoryName: subCategoryName.value,
+      subCategoryRoute: subCategoryRoute.value
+    }
 
-  //await
-  setDoc(subCategoryRef, {
-    subCategoryId: selectedSubCategoryId.value,
-    subCategoryName: subCategoryName.value,
-    subCategoryRoute: subCategoryRoute.value
-  })
-  .then(async () => {
+    subcategoryIdBeforeUpdate.value = toRaw(selectedSubCategoryId.value).value
+
+    await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubCategoryId.value, newSubCategory)
+
     emit('updatedSubcategory', selectedCategoryId.value)
-  })
+  } catch(error) {
+    console.warn({error})
+  }
 }
-
-watch(() => props.propCategories, (newValue, oldValue) => {
-  console.log('propCategories changed', props.propCategories)
-})
 </script>
 
 <template>
@@ -112,16 +120,16 @@ watch(() => props.propCategories, (newValue, oldValue) => {
         <h5>Edit Product Subcateg</h5>
       </div>
 
-      <p v-if="!propCategories.length">No parent categories</p>
+      <p v-if="!categories.length">No parent categories</p>
 
       <div class="q-gutter-md" v-else>
-        <q-select v-model="selectedCategoryId" :options="createCategoriesQselectOptions" outlined label="Parent category route" />
+        <q-select v-model="selectedCategoryId" :options="categoriesQselectOptions" outlined label="Parent category route" />
       </div>
 
-      <p v-if="!propSubcategories.length">No subcategories</p>
+      <p v-if="!subcategories.length">No subcategories</p>
 
       <div class="q-gutter-md" v-else>
-        <q-select v-model="selectedSubCategoryId" :options="returnSubcategoriesQselectOptions" outlined label="Subcategory" />
+        <q-select v-model="selectedSubCategoryId" :options="subCategoriesQselectOptions" outlined label="Subcategory" />
 
         <q-input v-model="subCategoryName" outlined label="Edit name"/>
 
