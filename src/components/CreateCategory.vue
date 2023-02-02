@@ -23,15 +23,18 @@
 <script setup>
 import { ref } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
+import { useNotifications } from 'src/composables/useNotifications';
 
 const { createCategoryInFirebase } = useFirebase()
+const { triggerNegative, triggerPositive } = useNotifications()
 const emit = defineEmits(['createdCategory'])
 const categoryName = ref('')
 const categoryRoute = ref('')
 
 const createCategory = async () => {
   if (!categoryName.value || !categoryRoute.value) {
-    console.log('fill in all the fields')
+    triggerNegative('Fill in all the fields')
+    return
   } else {
     let newCategory = {
       categoryName: categoryName.value,

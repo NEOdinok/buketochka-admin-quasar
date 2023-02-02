@@ -1,8 +1,10 @@
 <script setup>
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
+import { useNotifications } from 'src/composables/useNotifications';
 
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
+const { triggerPositive, triggerNegative } = useNotifications()
 const categoryIdBeforeUpdate = ref('')
 const selectedCategoryId= ref(null)
 const categoriesQselectOptions = ref([])
@@ -24,15 +26,25 @@ const props = defineProps({
 
 const updateCategory = async () => {
   try {
-    const newCategory = {
-      categoryName: categoryName.value,
-      categoryRoute: categoryRoute.value
+    if (!categoryName.value || !categoryRoute.value || !selectedCategoryId.value) {
+      triggerNegative('Fill in all the fields')
+      return
+    } else {
+      try {
+        const newCategory = {
+          categoryName: categoryName.value,
+          categoryRoute: categoryRoute.value
+        }
+        categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
+        await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
+        triggerPositive(`Cateogory updated`)
+        emit('updatedCategory', selectedCategoryId.value)
+      } catch(error) {
+        console.warn({error})
+      }
     }
-    categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
-    await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
-    emit('updatedCategory', selectedCategoryId.value)
-  } catch(error) {
-    console.warn({error})
+  } catch (error) {
+    console.warn({ error })
   }
 }
 
@@ -42,6 +54,8 @@ const deleteCategory = async () => {
   if (!confirm.value) {
     try {
       await deleteCategoryFromFirebase(selectedCategoryId.value)
+
+      triggerPositive(`${categoryName.value} category deleted`)
 
       categoriesQselectOptions.value = []
       selectedCategoryId.value = ''
@@ -57,7 +71,8 @@ const deleteCategory = async () => {
 
 const handleModal = () => {
   if (!selectedCategoryId.value) {
-    console.log('no category selected')
+    triggerNegative('No category selected')
+    return
   } else {
     confirm.value = true
   }

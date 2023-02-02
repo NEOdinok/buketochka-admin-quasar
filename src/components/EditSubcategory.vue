@@ -1,8 +1,9 @@
 <script setup>
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
+import { useNotifications } from 'src/composables/useNotifications'
 const { deleteSubcategoryFromFirebase, updateSubcategoryInFirebase } = useFirebase()
-
+const { triggerPositive, triggerNegative } = useNotifications()
 const subcategoryIdBeforeUpdate= ref('')
 
 const emit = defineEmits([
@@ -23,7 +24,8 @@ const confirm = ref(false)
 
 const handleModal = () => {
   if (!selectedSubCategoryId.value) {
-    console.log('no category selected')
+    triggerNegative('No subcatgory selected')
+    return
   } else {
     confirm.value = true
   }
@@ -96,6 +98,8 @@ const deleteSubCategory = async () => {
     try {
       await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubCategoryId.value)
 
+      triggerPositive(`${subCategoryName.value} subcategory deleted`)
+
       subCategoriesQselectOptions.value = []
       selectedSubCategoryId.value = ''
       subCategoryName.value = ''
@@ -110,17 +114,20 @@ const deleteSubCategory = async () => {
 
 const updateSubCategory = async () => {
   try {
-    const newSubCategory = {
-      subCategoryId: toRaw(selectedSubCategoryId.value).value,
-      subCategoryName: subCategoryName.value,
-      subCategoryRoute: subCategoryRoute.value
+    if (!subCategoryName.value || !subCategoryRoute.value || !selectedCategoryId.value || !selectedSubCategoryId.value) {
+      triggerNegative('Fill in all the fields')
+      return
+    } else {
+      const newSubCategory = {
+        subCategoryId: toRaw(selectedSubCategoryId.value).value,
+        subCategoryName: subCategoryName.value,
+        subCategoryRoute: subCategoryRoute.value
+      }
+      subcategoryIdBeforeUpdate.value = toRaw(selectedSubCategoryId.value).value
+      await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubCategoryId.value, newSubCategory)
+      emit('updatedSubcategory', selectedCategoryId.value)
+      triggerPositive(`Subcategory updated`)
     }
-
-    subcategoryIdBeforeUpdate.value = toRaw(selectedSubCategoryId.value).value
-
-    await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubCategoryId.value, newSubCategory)
-
-    emit('updatedSubcategory', selectedCategoryId.value)
   } catch(error) {
     console.warn({error})
   }

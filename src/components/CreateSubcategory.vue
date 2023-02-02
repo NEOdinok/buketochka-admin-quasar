@@ -1,7 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
+import { useNotifications } from 'src/composables/useNotifications';
 
+const { triggerPositive, triggerNegative } = useNotifications()
 const { createSubcategoryInFirebase } = useFirebase()
 const emit = defineEmits(['createdSubcategory'])
 const selectedCategoryId= ref('')
@@ -30,7 +32,8 @@ watch(() => props.categories, () => {
 const createSubCategory = async () => {
   try {
     if (!subCategoryName.value || !subCategoryRoute.value) {
-      console.log('fill in all the fields')
+      triggerNegative('Fill in all the fields')
+      return
     } else {
       const newSubcategory = {
         subCategoryName: subCategoryName.value,
@@ -39,6 +42,7 @@ const createSubCategory = async () => {
 
       await createSubcategoryInFirebase(selectedCategoryId.value, newSubcategory)
     }
+    triggerPositive(`${subCategoryName.value} subcategory created`)
 
     subCategoryName.value = ''
     subCategoryRoute.value = ''
