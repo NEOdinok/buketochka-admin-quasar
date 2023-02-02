@@ -1,3 +1,86 @@
+<template>
+  <div class="q-pa-md">
+    <h5 class="q-pb-md">Edit Product Category</h5>
+    <q-form
+      ref="editCategoryForm"
+      @submit="updateCategory"
+    >
+      <q-select
+        class="q-pb-lg"
+        v-model="selectedCategoryId"
+        :options="categoriesQselectOptions"
+        outlined label="Available categories"
+      />
+
+      <div v-if="selectedCategoryId" class="q-pb-lg">
+        <q-input
+          class="q-pb-lg"
+          v-model="categoryName"
+          outlined
+          label="Edit name"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Name must be filled in.',
+          ]"
+        />
+
+        <q-input
+          v-model="categoryRoute"
+          prefix="/"
+          outlined
+          label="Edit route"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Route must be filled in.',
+          ]"
+        />
+
+        <div class="row q-gutter-md">
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            icon-right="sync"
+            color="primary"
+            label="Update"
+            type="submit"
+          />
+
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            color="primary"
+            icon-right="delete"
+            label="Delete"
+            @click="confirm = true"
+          />
+        </div>
+      </div>
+
+    </q-form>
+
+    <q-dialog v-model="confirm" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar icon="error" color="red" text-color="white" />
+        <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedCategoryId.label }} ?</b></span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
+        <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
+        <q-btn
+          flat
+          label="Yes"
+          color="primary"
+          v-close-popup
+          @click="deleteCategory"
+        />
+      </q-card-actions>
+    </q-card>
+    </q-dialog>
+  </div>
+</template>
+
 <script setup>
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
@@ -11,6 +94,7 @@ const categoriesQselectOptions = ref([])
 const categoryName = ref(null)
 const categoryRoute = ref(null)
 const confirm = ref(false)
+const editCategoryForm = ref('')
 
 const emit = defineEmits([
   'updatedCategory',
@@ -26,23 +110,14 @@ const props = defineProps({
 
 const updateCategory = async () => {
   try {
-    if (!categoryName.value || !categoryRoute.value || !selectedCategoryId.value) {
-      triggerNegative('Fill in all the fields')
-      return
-    } else {
-      try {
-        const newCategory = {
-          categoryName: categoryName.value,
-          categoryRoute: categoryRoute.value
-        }
-        categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
-        await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
-        triggerPositive(`Cateogory updated`)
-        emit('updatedCategory', selectedCategoryId.value)
-      } catch(error) {
-        console.warn({error})
-      }
+    const newCategory = {
+      categoryName: categoryName.value,
+      categoryRoute: categoryRoute.value
     }
+    categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
+    await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
+    triggerPositive(`Cateogory updated`)
+    emit('updatedCategory', selectedCategoryId.value)
   } catch (error) {
     console.warn({ error })
   }
@@ -66,15 +141,6 @@ const deleteCategory = async () => {
     } catch (error) {
       console.warn({ error })
     }
-  }
-}
-
-const handleModal = () => {
-  if (!selectedCategoryId.value) {
-    triggerNegative('No category selected')
-    return
-  } else {
-    confirm.value = true
   }
 }
 
@@ -108,66 +174,6 @@ watch(selectedCategoryId, (newCategoryId) => {
   }
 })
 </script>
-
-<template>
-  <div class="edit-category-wrap q-pa-md">
-    <div class="q-gutter-md">
-
-      <h5>Edit Product Category</h5>
-
-      <q-select v-model="selectedCategoryId" :options="categoriesQselectOptions" outlined label="Available categories"/>
-
-      <q-input v-model="categoryName" outlined label="Edit name"/>
-
-      <q-input v-model="categoryRoute" outlined label="Edit route" />
-
-      <div class="row">
-        <div class="q-gutter-xs">
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            icon-right="sync"
-            color="primary"
-            label="Update"
-            @click="updateCategory"
-          />
-
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            color="primary"
-            icon-right="delete"
-            label="Delete"
-            @click="handleModal"
-          />
-        </div>
-      </div>
-
-      <q-dialog v-model="confirm" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="error" color="red" text-color="white" />
-          <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedCategoryId.label }} ?</b></span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
-          <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
-          <q-btn
-            flat
-            label="Yes"
-            color="primary"
-            v-close-popup
-            @click="deleteCategory"
-          />
-        </q-card-actions>
-      </q-card>
-      </q-dialog>
-    </div>
-  </div>
-</template>
 
 <style>
 

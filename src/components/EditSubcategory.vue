@@ -1,3 +1,95 @@
+<template>
+  <div class="q-pa-md">
+    <h5 class="q-pb-md">Edit Product Subcateg</h5>
+    <q-form
+      ref="editSubcategoryForm"
+      @submit="formValidate"
+    >
+      <q-select
+        class="q-pb-lg"
+        v-model="selectedCategoryId"
+        :options="categoriesQselectOptions"
+        outlined
+        label="Parent category route"
+      />
+
+      <div v-if="selectedCategoryId" class="q-pb-lg">
+        <q-select
+          outlined
+          class="q-pb-lg"
+          v-model="selectedSubCategoryId"
+          :options="subCategoriesQselectOptions"
+          label="Subcategory"
+        />
+
+        <q-input
+          outlined
+          class="q-pb-lg"
+          v-model="subCategoryName"
+          label="Edit name"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Name must be filled in.',
+          ]"
+        />
+
+        <q-input
+          outlined
+          class="q-pb-lg"
+          v-model="subCategoryRoute"
+          prefix="/"
+          label="Edit route"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Route must be filled in.',
+          ]"
+        />
+
+        <div class="row q-gutter-md">
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            icon-right="sync"
+            color="primary"
+            label="Update"
+            type="submit"
+          />
+
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            color="primary"
+            icon-right="delete"
+            label="Delete"
+            @click="confirm = true"
+          />
+        </div>
+
+        <q-dialog v-model="confirm" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar icon="error" color="red" text-color="white" />
+            <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedSubCategoryId.label }} ?</b></span>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
+            <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
+            <q-btn
+              flat
+              label="Yes"
+              color="primary"
+              v-close-popup
+              @click="deleteSubCategory"
+            />
+          </q-card-actions>
+        </q-card>
+        </q-dialog>
+      </div>
+    </q-form>
+  </div>
+</template>
+
 <script setup>
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
@@ -21,15 +113,6 @@ const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
 
 const confirm = ref(false)
-
-const handleModal = () => {
-  if (!selectedSubCategoryId.value) {
-    triggerNegative('No subcatgory selected')
-    return
-  } else {
-    confirm.value = true
-  }
-}
 
 const props = defineProps({
   categories: {
@@ -133,76 +216,6 @@ const updateSubCategory = async () => {
   }
 }
 </script>
-
-<template>
-  <div class="edit-category-wrap q-gutter-md q-mt-xl">
-      <div class="q-gutter-md">
-        <h5>Edit Product Subcateg</h5>
-      </div>
-
-      <p v-if="!categories.length">No parent categories</p>
-
-      <div class="q-gutter-md" v-else>
-        <q-select v-model="selectedCategoryId" :options="categoriesQselectOptions" outlined label="Parent category route" />
-      </div>
-
-      <p v-if="!subcategories.length">No subcategories</p>
-
-      <div class="q-gutter-md" v-else>
-        <q-select v-model="selectedSubCategoryId" :options="subCategoriesQselectOptions" outlined label="Subcategory" />
-
-        <q-input v-model="subCategoryName" outlined label="Edit name"/>
-
-        <q-input v-model="subCategoryRoute"  outlined label="Edit route" />
-
-        <div class="row">
-          <div class="q-gutter-xs">
-            <q-btn
-              unelevated
-              rounded
-              align="between"
-              icon-right="sync"
-              color="primary"
-              label="Update"
-              @click="updateSubCategory"
-            />
-
-            <q-btn
-              unelevated
-              rounded
-              align="between"
-              color="primary"
-              icon-right="delete"
-              label="Delete"
-              @click="handleModal"
-            />
-          </div>
-        </div>
-
-        <q-dialog v-model="confirm" persistent>
-        <q-card>
-          <q-card-section class="row items-center">
-            <q-avatar icon="error" color="red" text-color="white" />
-            <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedSubCategoryId.label }} ?</b></span>
-          </q-card-section>
-
-          <q-card-actions align="right">
-            <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
-            <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
-            <q-btn
-              flat
-              label="Yes"
-              color="primary"
-              v-close-popup
-              @click="deleteSubCategory"
-            />
-          </q-card-actions>
-        </q-card>
-        </q-dialog>
-      </div>
-
-  </div>
-</template>
 
 <style>
 </style>
