@@ -74,7 +74,7 @@
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications';
-import Modal from './Modal.vue';
+import Modal from './ConfirmationModal.vue';
 
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
 const { triggerPositive, triggerNegative } = useNotifications()

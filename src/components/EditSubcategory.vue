@@ -64,17 +64,10 @@
             @click="showDialog = true"
           />
         </div>
-
-        <q-dialog v-model="showDialog">
-          <Modal
-            @modalCancel="showDialog = false"
-            @modalSubmitDelete="deleteSubcategory"
-          >
-            <q-avatar icon="error" color="red" text-color="white"/>
+          <Modal :open="showDialog" @cancel="showDialog = false" @submit="deleteSubcategory" @request-hide="showDialog = false">
+            <q-avatar icon="error" color="red" text-color="white" />
             <span class="q-ml-sm">Are you sure you want to delete <b>{{ subCategoryName }}</b> ?</span>
           </Modal>
-        </q-dialog>
-
       </div>
     </q-form>
   </div>
@@ -84,7 +77,7 @@
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications'
-import Modal from './Modal.vue'
+import Modal from './ConfirmationModal.vue'
 
 const { deleteSubcategoryFromFirebase, updateSubcategoryInFirebase } = useFirebase()
 const { triggerPositive } = useNotifications()
