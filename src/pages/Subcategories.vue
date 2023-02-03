@@ -1,7 +1,7 @@
 <script setup>
 import CreateSubcategory from '../components/CreateSubcategory.vue'
 import EditSubcategory from '../components/EditSubcategory.vue'
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 
 const { getCategoryDocsFromFirebase, getSubcategoryDocsFromFirebase } = useFirebase()
@@ -28,7 +28,6 @@ async function subCategoriesHandler(parentCategoryId) {
 }
 
 </script>
-
 <template>
   <q-page>
     <div class="row justify-center">
@@ -48,7 +47,6 @@ async function subCategoriesHandler(parentCategoryId) {
         />
       </div>
     </div>
-
   </q-page>
 </template>
 

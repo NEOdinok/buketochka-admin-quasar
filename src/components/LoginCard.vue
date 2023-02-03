@@ -50,50 +50,50 @@
 </template>
 
 <script setup>
-  import { useAuthStore} from '../stores/authStore'
-  import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
+import { useAuthStore} from '../stores/authStore'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-  import { app } from '../../firebaseConfig'
-  import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence} from "firebase/auth";
+import { app } from '../../firebaseConfig'
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence} from "firebase/auth";
 
-  const authStore = useAuthStore()
-  const email = ref('')
-  const password = ref('')
-  const router = useRouter()
+const authStore = useAuthStore()
+const email = ref('')
+const password = ref('')
+const router = useRouter()
 
-  const submitHandler = async () => {
-    const auth = getAuth(app);
+const submitHandler = async () => {
+  const auth = getAuth(app);
 
-    setPersistence(auth, browserLocalPersistence)
-      .then(() => {
-        return signInWithEmailAndPassword(auth, email.value, password.value)
-      })
-      .then((cred) => {
-        authStore.userInfo = {
-          name: cred.user.displayName,
-          email: cred.user.email,
-          uid: cred.user.uid
-        }
-      })
-      .then(() => {
-        router.push({ path: '/' })
-      })
-      .catch((error) => {
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      return signInWithEmailAndPassword(auth, email.value, password.value)
+    })
+    .then((cred) => {
+      authStore.userInfo = {
+        name: cred.user.displayName,
+        email: cred.user.email,
+        uid: cred.user.uid
+      }
+    })
+    .then(() => {
+      router.push({ path: '/' })
+    })
+    .catch((error) => {
 
-      });
+    });
 
-    // signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
-    //   authStore.userInfo = {
-    //     name: cred.user.displayName,
-    //     email: cred.user.email
-    //   }
-    //   router.push({ path: '/' })
-    // })
-    // .catch((error) => {
-    //   throw error
-    // });
-  }
+  // signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
+  //   authStore.userInfo = {
+  //     name: cred.user.displayName,
+  //     email: cred.user.email
+  //   }
+  //   router.push({ path: '/' })
+  // })
+  // .catch((error) => {
+  //   throw error
+  // });
+}
 </script>
 
 <style>

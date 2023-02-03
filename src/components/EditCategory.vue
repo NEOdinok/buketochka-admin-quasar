@@ -51,32 +51,21 @@
             color="primary"
             icon-right="delete"
             label="Delete"
-            @click="confirm = true"
+            @click="showDialog = true"
           />
         </div>
       </div>
 
     </q-form>
 
-    <q-dialog v-model="confirm" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <q-avatar icon="error" color="red" text-color="white" />
-        <span class="q-ml-sm">Are you sure you want to delete <b>{{ selectedCategoryId.label }} ?</b></span>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat align="between" color="primary" label="Cancel" v-close-popup></q-btn>
-        <!-- <q-btn flat label="Cancel" color="primary" v-close-popup /> -->
-        <q-btn
-          flat
-          label="Yes"
-          color="primary"
-          v-close-popup
-          @click="deleteCategory"
-        />
-      </q-card-actions>
-    </q-card>
+    <q-dialog v-model="showDialog">
+      <Modal
+        @modalCancel="showDialog = false"
+        @modalSubmitDelete="deleteCategory"
+      >
+        <q-avatar icon="error" color="red" text-color="white"/>
+        <span class="q-ml-sm">Are you sure you want to delete <b>{{ categoryName }}</b> ?</span>
+      </Modal>
     </q-dialog>
   </div>
 </template>
@@ -85,6 +74,7 @@
 import { ref, watch, toRaw } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications';
+import Modal from './Modal.vue';
 
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
 const { triggerPositive, triggerNegative } = useNotifications()
@@ -93,7 +83,7 @@ const selectedCategoryId= ref(null)
 const categoriesQselectOptions = ref([])
 const categoryName = ref(null)
 const categoryRoute = ref(null)
-const confirm = ref(false)
+const showDialog = ref(false)
 const editCategoryForm = ref('')
 
 const emit = defineEmits([
@@ -123,10 +113,18 @@ const updateCategory = async () => {
   }
 }
 
-const deleteCategory = async () => {
-  confirm.value = false
+const formReset = () => {
+  categoriesQselectOptions.value = []
+  selectedCategoryId.value = ''
+  categoryName.value = ''
+  categoryRoute.value = ''
+  editCategoryForm.value.reset()
+}
 
-  if (!confirm.value) {
+const deleteCategory = async () => {
+  showDialog.value = false
+
+  if (!showDialog.value) {
     try {
       await deleteCategoryFromFirebase(selectedCategoryId.value)
 
