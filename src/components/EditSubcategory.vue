@@ -64,7 +64,15 @@
             @click="showDialog = true"
           />
         </div>
-          <Modal :open="showDialog" @cancel="showDialog = false" @submit="deleteSubcategory" @request-hide="showDialog = false">
+        showDialog {{ showDialog }}
+        counter {{counter  }}
+          <Modal
+            v-model:open="showDialog"
+            v-model:counter="counter"
+            modal-title="Тестовый тайтл"
+            @cancel="showDialog = false"
+            @submit="deleteSubcategory"
+          >
             <q-avatar icon="error" color="red" text-color="white" />
             <span class="q-ml-sm">Are you sure you want to delete <b>{{ subCategoryName }}</b> ?</span>
           </Modal>
@@ -88,6 +96,9 @@ const emit = defineEmits([
   'selectedNewParentCategory',
   'deletedSubcategory',
 ])
+const counter = ref(0)
+
+
 const selectedCategoryId = ref('')
 const categoriesQselectOptions = ref([])
 const selectedSubcategoryId = ref('')
