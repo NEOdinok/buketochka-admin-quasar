@@ -82,6 +82,7 @@ import { useNotifications } from 'src/composables/useNotifications';
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import Modal from './Modal.vue';
+import Modal from './ConfirmationModal.vue';
 
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
 const { triggerPositive, triggerNegative } = useNotifications()

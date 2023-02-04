@@ -68,17 +68,18 @@
             type="submit"
           />
         </div>
-
-        <q-dialog v-model="showDialog">
+        showDialog {{ showDialog }}
+        counter {{counter  }}
           <Modal
-            @modalCancel="showDialog = false"
-            @modalSubmitDelete="deleteSubcategory"
+            v-model:open="showDialog"
+            v-model:counter="counter"
+            modal-title="Тестовый тайтл"
+            @cancel="showDialog = false"
+            @submit="deleteSubcategory"
           >
             <q-avatar icon="error" color="red" text-color="white"/>
             <span class="q-ml-sm">Are you sure you want to delete <b>{{ state.subCategoryName }}</b> ?</span>
           </Modal>
-        </q-dialog>
-
       </div>
     </q-form>
   </div>
@@ -91,6 +92,7 @@ import { useNotifications } from 'src/composables/useNotifications'
 import Modal from './Modal.vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
+import Modal from './ConfirmationModal.vue'
 
 const { deleteSubcategoryFromFirebase, updateSubcategoryInFirebase } = useFirebase()
 const { triggerPositive } = useNotifications()
