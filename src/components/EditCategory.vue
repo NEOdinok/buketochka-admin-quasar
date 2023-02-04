@@ -7,43 +7,36 @@
     >
       <q-select
         class="q-pb-lg"
+        v-if="categories.length"
         v-model="selectedCategoryId"
         :options="categoriesQselectOptions"
         outlined label="Available categories"
       />
+      <p v-else>No categories. Create the first one on the left</p>
 
       <div v-if="selectedCategoryId" class="q-pb-lg">
+
         <q-input
           class="q-pb-lg"
-          v-model="categoryName"
+          v-model="state.categoryName"
           outlined
           label="Edit name"
-          :rules="[
-            (val) => (val && val.length > 0) || 'Name must be filled in.',
-          ]"
+          bottom-slots
+          @input="v$.categoryName.$touch()"
+          :error="v$.categoryName.$invalid"
         />
 
         <q-input
-          v-model="categoryRoute"
+          v-model="state.categoryRoute"
           prefix="/"
           outlined
           label="Edit route"
-          :rules="[
-            (val) => (val && val.length > 0) || 'Route must be filled in.',
-          ]"
+          bottom-slots
+          @input="v$.categoryRoute.$touch()"
+          :error="v$.categoryRoute.$invalid"
         />
 
-        <div class="row q-gutter-md">
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            icon-right="sync"
-            color="primary"
-            label="Update"
-            type="submit"
-          />
-
+        <div class="row q-gutter-sm">
           <q-btn
             unelevated
             rounded
@@ -53,6 +46,18 @@
             label="Delete"
             @click="showDialog = true"
           />
+
+          <q-btn
+            :disable="!allowUpdate"
+            unelevated
+            rounded
+            align="between"
+            icon-right="sync"
+            color="primary"
+            label="Update"
+            type="submit"
+          />
+
         </div>
       </div>
 
@@ -64,16 +69,18 @@
         @modalSubmitDelete="deleteCategory"
       >
         <q-avatar icon="error" color="red" text-color="white"/>
-        <span class="q-ml-sm">Are you sure you want to delete <b>{{ categoryName }}</b> ?</span>
+        <span class="q-ml-sm">Are you sure you want to delete <b>{{ state.categoryName }}</b> ?</span>
       </Modal>
     </q-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, toRaw } from 'vue';
+import { ref, watch, toRaw, reactive, computed } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications';
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
 import Modal from './Modal.vue';
 
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
@@ -85,6 +92,32 @@ const categoryName = ref(null)
 const categoryRoute = ref(null)
 const showDialog = ref(false)
 const editCategoryForm = ref('')
+
+const state = reactive({
+  categoryName: '',
+  categoryRoute: ''
+})
+
+const rules = {
+  categoryName: { required }, // Matches state.firstName
+  categoryRoute: { required }, // Matches state.lastName
+}
+
+const categoryBeforeChange = reactive({
+  categoryName: '',
+  categoryRoute: ''
+})
+
+const allowUpdate = computed(() => {
+  if (state.categoryName != categoryBeforeChange.categoryName
+  || state.categoryRoute != categoryBeforeChange.categoryRoute) {
+    return true
+  } else {
+    return false
+  }
+})
+
+const v$ = useVuelidate(rules, state)
 
 const emit = defineEmits([
   'updatedCategory',
@@ -101,12 +134,15 @@ const props = defineProps({
 const updateCategory = async () => {
   try {
     const newCategory = {
-      categoryName: categoryName.value,
-      categoryRoute: categoryRoute.value
+      categoryName: state.categoryName,
+      categoryRoute: state.categoryRoute
     }
     categoryIdBeforeUpdate.value = toRaw(selectedCategoryId.value).value
     await updateCategoryInFirebase(selectedCategoryId.value, newCategory)
     triggerPositive(`Cateogory updated`)
+    categoryBeforeChange.categoryName = ''
+    categoryBeforeChange.categoryRoute = ''
+
     emit('updatedCategory', selectedCategoryId.value)
   } catch (error) {
     console.warn({ error })
@@ -127,13 +163,10 @@ const deleteCategory = async () => {
   if (!showDialog.value) {
     try {
       await deleteCategoryFromFirebase(selectedCategoryId.value)
-
       triggerPositive(`${categoryName.value} category deleted`)
-
-      categoriesQselectOptions.value = []
-      selectedCategoryId.value = ''
-      categoryName.value = ''
-      categoryRoute.value = ''
+      formReset()
+      categoryBeforeChange.categoryName = ''
+      categoryBeforeChange.categoryRoute = ''
 
       emit('deletedCategory', selectedCategoryId.value)
     } catch (error) {
@@ -167,8 +200,10 @@ watch(selectedCategoryId, (newCategoryId) => {
   } else {
     let res = props.categories.find(c => c.categoryId === newCategoryId.value)
 
-    categoryName.value = res.categoryName
-    categoryRoute.value = res.categoryRoute
+    categoryBeforeChange.categoryName = res.categoryName,
+    categoryBeforeChange.categoryRoute = res.categoryRoute
+    state.categoryName = res.categoryName
+    state.categoryRoute = res.categoryRoute
   }
 })
 </script>

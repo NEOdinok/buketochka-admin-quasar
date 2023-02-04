@@ -13,47 +13,40 @@
         label="Parent category route"
       />
 
-      <div v-if="selectedCategoryId && subcategories.length" class="q-pb-lg">
+      <div v-if="selectedCategoryId" class="q-pb-lg">
         <q-select
           outlined
           class="q-pb-lg"
           v-model="selectedSubcategoryId"
+          v-if="subcategories.length"
           :options="subCategoriesQselectOptions"
           label="Subcategory"
         />
 
+        <p v-else>No subcategories. Add the first one on the left</p>
+
         <q-input
           outlined
           class="q-pb-lg"
-          v-model="subCategoryName"
+          v-if="selectedSubcategoryId"
+          v-model="state.subCategoryName"
           label="Edit name"
-          :rules="[
-            (val) => (val && val.length > 0) || 'Name must be filled in.',
-          ]"
+          @input="v$.subCategoryName.$touch()"
+          :error="v$.subCategoryName.$invalid"
         />
 
         <q-input
           outlined
           class="q-pb-lg"
-          v-model="subCategoryRoute"
+          v-if="selectedSubcategoryId"
+          v-model="state.subCategoryRoute"
           prefix="/"
           label="Edit route"
-          :rules="[
-            (val) => (val && val.length > 0) || 'Route must be filled in.',
-          ]"
+          @input="v$.subCategoryRoute.$touch()"
+          :error="v$.subCategoryRoute.$invalid"
         />
 
         <div class="row q-gutter-md">
-          <q-btn
-            unelevated
-            rounded
-            align="between"
-            icon-right="sync"
-            color="primary"
-            label="Update"
-            type="submit"
-          />
-
           <q-btn
             unelevated
             rounded
@@ -63,6 +56,17 @@
             label="Delete"
             @click="showDialog = true"
           />
+
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            icon-right="sync"
+            color="primary"
+            label="Update"
+            :disabled="!allowUpdate"
+            type="submit"
+          />
         </div>
 
         <q-dialog v-model="showDialog">
@@ -71,7 +75,7 @@
             @modalSubmitDelete="deleteSubcategory"
           >
             <q-avatar icon="error" color="red" text-color="white"/>
-            <span class="q-ml-sm">Are you sure you want to delete <b>{{ subCategoryName }}</b> ?</span>
+            <span class="q-ml-sm">Are you sure you want to delete <b>{{ state.subCategoryName }}</b> ?</span>
           </Modal>
         </q-dialog>
 
@@ -81,28 +85,56 @@
 </template>
 
 <script setup>
-import { ref, watch, toRaw } from 'vue';
+import { ref, watch, toRaw, reactive, computed } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications'
 import Modal from './Modal.vue'
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
 
 const { deleteSubcategoryFromFirebase, updateSubcategoryInFirebase } = useFirebase()
 const { triggerPositive } = useNotifications()
 const subcategoryIdBeforeUpdate= ref('')
+const selectedCategoryId = ref('')
+const categoriesQselectOptions = ref([])
+const selectedSubcategoryId = ref('')
+const subCategoriesQselectOptions = ref([])
+// const subCategoryName = ref(null)
+// const subCategoryRoute = ref(null)
+const editSubcategoryForm = ref(null)
+const showDialog = ref(false)
+
+const state = reactive({
+  subCategoryName: '',
+  subCategoryRoute: ''
+})
+
+const rules = {
+  subCategoryName: { required }, // Matches state.firstName
+  subCategoryRoute: { required },
+}
+
+const subCategoryBeforeChange = reactive({
+  subCategoryName: '',
+  subCategoryRoute: ''
+})
+
+const v$ = useVuelidate(rules, state)
+
+const allowUpdate = computed(() => {
+  if (state.subCategoryName != subCategoryBeforeChange.subCategoryName
+  || state.subCategoryRoute != subCategoryBeforeChange.subCategoryRoute) {
+    return true
+  } else {
+    return false
+  }
+})
 
 const emit = defineEmits([
   'updatedSubcategory',
   'selectedNewParentCategory',
   'deletedSubcategory',
 ])
-const selectedCategoryId = ref('')
-const categoriesQselectOptions = ref([])
-const selectedSubcategoryId = ref('')
-const subCategoriesQselectOptions = ref([])
-const subCategoryName = ref(null)
-const subCategoryRoute = ref(null)
-const editSubcategoryForm = ref(null)
-const showDialog = ref(false)
 
 const props = defineProps({
   categories: {
@@ -146,8 +178,8 @@ watch(() => props.categories, () => {
 watch(selectedCategoryId, (newCategoryId) => {
   subCategoriesQselectOptions.value = []
   selectedSubcategoryId.value = ''
-  subCategoryName.value = ''
-  subCategoryRoute.value = ''
+  state.subCategoryName = ''
+  state.subCategoryRoute = ''
   subcategoryIdBeforeUpdate.value = ''
 
   emit('selectedNewParentCategory', newCategoryId)
@@ -158,17 +190,19 @@ watch(selectedSubcategoryId, (newSubcategoryId) => {
     return
   } else {
     let res = props.subcategories.find(c => c.subCategoryId === newSubcategoryId.value)
+    subCategoryBeforeChange.subCategoryName = res.subCategoryName,
+    subCategoryBeforeChange.subCategoryRoute = res.subCategoryRoute
 
-    subCategoryName.value = res.subCategoryName
-    subCategoryRoute.value = res.subCategoryRoute
+    state.subCategoryName = res.subCategoryName
+    state.subCategoryRoute = res.subCategoryRoute
   }
 })
 
 const formReset = () => {
   subCategoriesQselectOptions.value = []
   selectedSubcategoryId.value = ''
-  subCategoryName.value = ''
-  subCategoryRoute.value = ''
+  state.subCategoryName = ''
+  state.subCategoryRoute = ''
   editSubcategoryForm.value.reset()
 }
 
@@ -178,7 +212,7 @@ const deleteSubcategory = async () => {
   if (!showDialog.value) {
     try {
       await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubcategoryId.value)
-      triggerPositive(`${subCategoryName.value} subcategory deleted`)
+      triggerPositive(`${state.subCategoryName} subcategory deleted`)
       formReset()
       emit('deletedSubcategory', selectedCategoryId.value)
     } catch(error) {
@@ -190,9 +224,9 @@ const deleteSubcategory = async () => {
 const updateSubCategory = async () => {
   try {
     const newSubcategory = {
-      subCategoryId: toRaw(CelectedSubcategoryId.value).value,
-      subCategoryName: subCategoryName.value,
-      subCategoryRoute: subCategoryRoute.value
+      subCategoryId: toRaw(selectedSubcategoryId.value).value,
+      subCategoryName: state.subCategoryName.value,
+      subCategoryRoute: state.subCategoryRoute.value
     }
     subcategoryIdBeforeUpdate.value = toRaw(selectedSubcategoryId.value).value
     await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubcategoryId.value, newSubcategory)
