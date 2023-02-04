@@ -1,8 +1,6 @@
 <template>
   <q-dialog v-model="modalOpen">
     <q-card>
-      <h4>{{ modalTitle }}</h4>
-      <q-btn @click="$emit('update:counter', counter + 1)"></q-btn>
       <q-card-section class="row items-center">
         <slot></slot>
       </q-card-section>
@@ -20,25 +18,21 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-    open: {
-      type: Boolean,
-    },
-    counter: {
-      type: Number,
-    },
-    modalTitle: {
-      type: String
-    }
-  })
+  open: {
+    type: Boolean,
+  },
+  modalTitle: {
+    type: String
+  }
+})
+
 const emit = defineEmits([
   'submit',
   'cancel',
-  'request-hide',
-
   'update:open',
-  'update:counter',
 ])
 
+//proxy for recieved 'open' prop
 const modalOpen = computed({
   get() {
     return props.open;

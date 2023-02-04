@@ -17,7 +17,7 @@
         <q-select
           outlined
           class="q-pb-lg"
-          v-model="selectedSubcategoryId"
+          v-model="selectedSubCategoryId"
           v-if="subcategories.length"
           :options="subCategoriesQselectOptions"
           label="Subcategory"
@@ -28,7 +28,7 @@
         <q-input
           outlined
           class="q-pb-lg"
-          v-if="selectedSubcategoryId"
+          v-if="selectedSubCategoryId"
           v-model="state.subCategoryName"
           label="Edit name"
           @input="v$.subCategoryName.$touch()"
@@ -38,7 +38,7 @@
         <q-input
           outlined
           class="q-pb-lg"
-          v-if="selectedSubcategoryId"
+          v-if="selectedSubCategoryId"
           v-model="state.subCategoryRoute"
           prefix="/"
           label="Edit route"
@@ -68,12 +68,8 @@
             type="submit"
           />
         </div>
-        showDialog {{ showDialog }}
-        counter {{counter  }}
           <Modal
             v-model:open="showDialog"
-            v-model:counter="counter"
-            modal-title="Тестовый тайтл"
             @cancel="showDialog = false"
             @submit="deleteSubcategory"
           >
@@ -89,7 +85,6 @@
 import { ref, watch, toRaw, reactive, computed } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications'
-import Modal from './Modal.vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import Modal from './ConfirmationModal.vue'
@@ -99,7 +94,7 @@ const { triggerPositive } = useNotifications()
 const subcategoryIdBeforeUpdate= ref('')
 const selectedCategoryId = ref('')
 const categoriesQselectOptions = ref([])
-const selectedSubcategoryId = ref('')
+const selectedSubCategoryId = ref('')
 const subCategoriesQselectOptions = ref([])
 // const subCategoryName = ref(null)
 // const subCategoryRoute = ref(null)
@@ -160,7 +155,7 @@ watch(() => props.subcategories, () => {
   if (subcategoryIdBeforeUpdate.value) {
     let res = props.subcategories.find(c => c.subCategoryId === subcategoryIdBeforeUpdate.value)
 
-    let updatedSubcategory = {
+    const updatedSubcategory = {
       label: res.subCategoryName,
       value: res.subCategoryId
     }
@@ -179,7 +174,7 @@ watch(() => props.categories, () => {
 
 watch(selectedCategoryId, (newCategoryId) => {
   subCategoriesQselectOptions.value = []
-  selectedSubcategoryId.value = ''
+  selectedSubCategoryId.value = ''
   state.subCategoryName = ''
   state.subCategoryRoute = ''
   subcategoryIdBeforeUpdate.value = ''
@@ -187,7 +182,7 @@ watch(selectedCategoryId, (newCategoryId) => {
   emit('selectedNewParentCategory', newCategoryId)
 })
 
-watch(selectedSubcategoryId, (newSubcategoryId) => {
+watch(selectedSubCategoryId, (newSubcategoryId) => {
   if (!newSubcategoryId.value) {
     return
   } else {
@@ -202,7 +197,7 @@ watch(selectedSubcategoryId, (newSubcategoryId) => {
 
 const formReset = () => {
   subCategoriesQselectOptions.value = []
-  selectedSubcategoryId.value = ''
+  selectedSubCategoryId.value = ''
   state.subCategoryName = ''
   state.subCategoryRoute = ''
   editSubcategoryForm.value.reset()
@@ -213,7 +208,7 @@ const deleteSubcategory = async () => {
 
   if (!showDialog.value) {
     try {
-      await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubcategoryId.value)
+      await deleteSubcategoryFromFirebase(selectedCategoryId.value, selectedSubCategoryId.value)
       triggerPositive(`${state.subCategoryName} subcategory deleted`)
       formReset()
       emit('deletedSubcategory', selectedCategoryId.value)
@@ -226,12 +221,12 @@ const deleteSubcategory = async () => {
 const updateSubCategory = async () => {
   try {
     const newSubcategory = {
-      subCategoryId: toRaw(selectedSubcategoryId.value).value,
-      subCategoryName: state.subCategoryName.value,
-      subCategoryRoute: state.subCategoryRoute.value
+      subCategoryId: toRaw(selectedSubCategoryId.value).value,
+      subCategoryName: state.subCategoryName,
+      subCategoryRoute: state.subCategoryRoute
     }
-    subcategoryIdBeforeUpdate.value = toRaw(selectedSubcategoryId.value).value
-    await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubcategoryId.value, newSubcategory)
+    subcategoryIdBeforeUpdate.value = toRaw(selectedSubCategoryId.value).value
+    await updateSubcategoryInFirebase(selectedCategoryId.value, selectedSubCategoryId.value, newSubcategory)
     emit('updatedSubcategory', selectedCategoryId.value)
     triggerPositive(`Subcategory updated`)
   } catch(error) {
