@@ -2,6 +2,7 @@ import { useQuasar } from 'quasar'
 
 export function useNotifications() {
   const $q = useQuasar()
+  const myNotify = () => void 0;
 
   function triggerPositive(message) {
     $q.notify({
@@ -21,8 +22,18 @@ export function useNotifications() {
     })
   }
 
+  function triggerSpinner(message) {
+     const dismissNotification = $q.notify({
+      spinner: true,
+      timeout: 0,
+      message,
+    })
+    return dismissNotification
+  }
+
   return {
     triggerPositive,
-    triggerNegative
+    triggerNegative,
+    triggerSpinner,
   }
 }

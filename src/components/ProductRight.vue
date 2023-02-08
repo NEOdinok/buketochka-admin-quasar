@@ -1,108 +1,53 @@
 <template>
   <div class="q-pa-md">
-    <q-form
-      ref="productRightForm"
-    >
+    <q-form ref="productRightForm">
       <q-carousel
-        v-model="slide"
-        transition-prev="scale"
-        transition-next="scale"
+        v-model="currentSlide"
+        transition-prev="slide-right"
+        transition-next="slide-left"
         swipeable
         animated
-        control-color="white"
+        control-color="primary"
         navigation
+        padding
         arrows
         height="300px"
-        class="bg-primary text-white rounded-borders"
+        class="bg-grey-1 shadow-2 rounded-borders"
       >
-        <q-carousel-slide name="style" class="column no-wrap flex-center">
-          <q-icon name="style" size="56px" />
-          <div class="q-mt-md text-center">
-            {{ lorem }}
+        <q-carousel-slide :name="1" class="column no-wrap">
+          <div class="row fit justify-start items-center q-gutter-xs q-col-gutter no-wrap">
+            <q-img class="rounded-borders col-6 full-height" src="https://cdn.quasar.dev/img/mountains.jpg" />
           </div>
         </q-carousel-slide>
 
-        <q-carousel-slide name="tv" class="column no-wrap flex-center">
-          <q-icon name="live_tv" size="56px" />
-          <div class="q-mt-md text-center">
-            {{ lorem }}
-          </div>
-        </q-carousel-slide>
-
-        <q-carousel-slide name="layers" class="column no-wrap flex-center">
-          <q-icon name="layers" size="56px" />
-          <div class="q-mt-md text-center">
-            {{ lorem }}
-          </div>
-        </q-carousel-slide>
-
-        <q-carousel-slide name="map" class="column no-wrap flex-center">
-          <q-icon name="terrain" size="56px" />
-          <div class="q-mt-md text-center">
-            {{ lorem }}
+        <q-carousel-slide  v-for="(url, i) in imageUrls" :name="i" class="column no-wrap">
+          <div class="row fit justify-start items-center q-gutter-xs q-col-gutter no-wrap">
+            <q-img class="rounded-borders col-6 full-height" :src="url" />
           </div>
         </q-carousel-slide>
       </q-carousel>
-
-      <div class="q-pt-md">
-        <q-file
-          v-model="files"
-          use-chips
-          label="Pick multiple photos"
-          outlined
-          multiple
-        />
-      </div>
-
     </q-form>
+
+    <FirebaseUpload
+      @onImageUpload="handleUpload"
+    />
+
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import FirebaseUpload from './FirebaseUpload.vue';
 
-const files = ref([])
+const imageFile = ref(null)
+const currentSlide = ref(1)
+const imageUrls = ref([])
+
+const handleUpload = (uploadedImageUrl) => {
+  imageUrls.value.push(uploadedImageUrl)
+}
 
 </script>
 
 <style>
 </style>
-
-<!-- <q-carousel
-  v-model="slide"
-  transition-prev="scale"
-  transition-next="scale"
-  swipeable
-  animated
-  control-color="white"
-  navigation
-  padding
-  arrows
-  height="300px"
-  class="bg-primary text-white shadow-1 rounded-borders"
->
-  <q-carousel-slide name="style" class="column no-wrap flex-center">
-    <q-icon name="style" size="56px" />
-    <div class="q-mt-md text-center">
-      {{ lorem }}
-    </div>
-  </q-carousel-slide>
-  <q-carousel-slide name="tv" class="column no-wrap flex-center">
-    <q-icon name="live_tv" size="56px" />
-    <div class="q-mt-md text-center">
-      {{ lorem }}
-    </div>
-  </q-carousel-slide>
-  <q-carousel-slide name="layers" class="column no-wrap flex-center">
-    <q-icon name="layers" size="56px" />
-    <div class="q-mt-md text-center">
-      {{ lorem }}
-    </div>
-  </q-carousel-slide>
-  <q-carousel-slide name="map" class="column no-wrap flex-center">
-    <q-icon name="terrain" size="56px" />
-    <div class="q-mt-md text-center">
-      {{ lorem }}
-    </div>
-  </q-carousel-slide>
-</q-carousel> -->

@@ -1,6 +1,7 @@
 <template>
   <div class="q-pa-md">
     <h5 class="q-pb-md">Edit Product Category</h5>
+
     <q-form
       ref="editCategoryForm"
       @submit="updateCategory"
@@ -35,6 +36,8 @@
           @input="v$.categoryRoute.$touch()"
           :error="v$.categoryRoute.$invalid"
         />
+
+
 
         <div class="row q-gutter-sm">
           <q-btn
@@ -95,7 +98,7 @@ const editCategoryForm = ref('')
 
 const state = reactive({
   categoryName: '',
-  categoryRoute: ''
+  categoryRoute: '',
 })
 
 const rules = {
