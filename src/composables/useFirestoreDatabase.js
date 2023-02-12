@@ -1,6 +1,6 @@
 import { getAuth } from "firebase/auth"
 import { app } from "../../firebaseConfig"
-import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, updateMetadata } from "firebase/storage";
 import { getDocs, collection, getFirestore, deleteDoc, doc, setDoc, addDoc } from "firebase/firestore";
 
 export function useFirestoreDatabase() {
@@ -17,31 +17,61 @@ export function useFirestoreDatabase() {
       const docRef = await addDoc(collection(db, "users", auth.currentUser.uid, "products"), newProduct)
       const productIdInFirestore = docRef.id
 
-      // productImages.forEach(async (imageFile) => {
-      // })
-
       const productImages = productData.imageFiles
-      const urlsOfUploadedImages = []
-
-      const requests = productImages.map(async (imageFile) => {
-        console.log('starting map for', imageFile.name)
+      const promises = productImages.map(async (imageFile) => {
+        const imageFileStorageRefString = `images/${productIdInFirestore}/${imageFile.name}`
         const storageRef = ref(storage, `images/${productIdInFirestore}/${imageFile.name}`)
+        await uploadBytesResumable(storageRef, imageFile)
+        const metadata = {
+          customMetadata: {
+            isMain: false,
+            storageRef: imageFileStorageRefString,
+          }
+        }
+        const uploadedMeta = await updateMetadata(storageRef, metadata)
 
-        const uploadTask = await uploadBytesResumable(storageRef, imageFile);
-        // uploadTask.on('state_changed', (snapshot) => {
-        //   const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        //   console.log('Upload is ' + progress + '% done');
-        // })
-        return await getDownloadURL(storageRef);
+        return { ...uploadedMeta.customMetadata, imageUrl: await getDownloadURL(storageRef) }
       })
 
-      return Promise.all(requests)
+      return Promise.all(promises)
     } catch (error) {
       throw({ error })
     }
   }
 
+  async function updateMainImageInFirebase(currentMainImageRefString, newMainImageRefString) {
+    try {
+      if (currentMainImageRefString != null) {
+        console.log('[firebase] current is not null')
+        const replacementMeta = {
+          customMetadata: {
+            isMain: false,
+            storageRef: currentMainImageRefString,
+          }
+        }
+        let uploadedMeta = await updateMetadata(currentMainImageRefString, replacementMeta)
+        console.log('[firebase] updated current', uploadedMeta)
+      } else {
+        console.log('[firebase] current is null')
+
+        const newMetadata = {
+          customMetadata: {
+            isMain: true,
+            storageRef: newMainImageRefString,
+          }
+        }
+        const newMainImageStorageRef = ref(storage, newMainImageRefString)
+        const uploadedMeta = await updateMetadata(newMainImageStorageRef, newMetadata)
+
+        return { ...uploadedMeta.customMetadata, imageUrl: await getDownloadURL(newMainImageStorageRef)  }
+      }
+    } catch (error) {
+      console.warn({ error })
+    }
+  }
+
   return {
     uploadProductToFirebase,
+    updateMainImageInFirebase,
   }
 }

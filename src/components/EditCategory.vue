@@ -37,8 +37,6 @@
           :error="v$.categoryRoute.$invalid"
         />
 
-
-
         <div class="row q-gutter-sm">
           <q-btn
             unelevated

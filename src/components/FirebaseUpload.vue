@@ -44,7 +44,7 @@ const urlsOfUploadedImages= ref(null)
 const productImageFiles = ref(null)
 
 const emit = defineEmits([
-  'onImageUpload',
+  'onImagesUploaded',
 ])
 
 const canUpload = computed(() => {
@@ -58,13 +58,12 @@ const submitHandler = async () => {
       amount: 1,
       imageFiles: productImageFiles.value
     }
-    // const dismissNotification = triggerSpinner('loading...')
-    console.log('[FirebaseUpload] pass data to composable', productData)
+    const dismissNotification = triggerSpinner('loading...')
+    urlsOfUploadedImages.value = []
     urlsOfUploadedImages.value = await uploadProductToFirebase(productData)
-    // console.log('[FirebaseUpload] recieved', urlsOfUploadedImages.value)
-    urlsOfUploadedImages.value.forEach(url => {
-      console.log('url: ', url)
-    })
+    if (urlsOfUploadedImages.value) { dismissNotification() }
+    console.log('[FirebaseUpload] recieved', urlsOfUploadedImages.value)
+    emit('onImagesUploaded', urlsOfUploadedImages.value);
   } catch (error) {
     console.warn({ error })
   }
