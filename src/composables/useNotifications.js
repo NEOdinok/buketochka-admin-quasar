@@ -7,7 +7,7 @@ export function useNotifications() {
   function triggerPositive(message) {
     $q.notify({
       type: 'positive',
-      timeout: 1000,
+      timeout: 1500,
       position: 'top-right',
       message
     })
@@ -16,7 +16,7 @@ export function useNotifications() {
   function triggerNegative(message) {
     $q.notify({
       type: 'negative',
-      timeout: 1000,
+      timeout: 1500,
       position: 'top-right',
       message
     })
@@ -26,6 +26,7 @@ export function useNotifications() {
      const dismissNotification = $q.notify({
       spinner: true,
       timeout: 0,
+      position: 'top-right',
       message,
     })
     return dismissNotification

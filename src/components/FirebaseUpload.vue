@@ -2,15 +2,17 @@
 <div class="">
 
   <q-file
-    v-model="productImageFiles"
-    label="Add product images"
+    v-model="pendingImages"
+    label="Add images to upload"
     class="q-pt-md"
+    accept=".jpg, image/*"
     outlined
     counter
     clearable
+    multiple
+    append
     use-chips
     :counter-label="counterLabelFn"
-    multiple
   >
     <template v-slot:prepend>
       <q-icon name="attach_file" />
@@ -27,43 +29,34 @@
       />
     </template>
   </q-file>
-
 </div>
-
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useFirestoreDatabase } from 'src/composables/useFirestoreDatabase'
 import { useNotifications } from 'src/composables/useNotifications';
-
 const { triggerSpinner } = useNotifications()
-const { uploadProductToFirebase } = useFirestoreDatabase()
-
-const urlsOfUploadedImages= ref(null)
-const productImageFiles = ref(null)
+const { uploadImagesToFirebaseStorage } = useFirestoreDatabase()
+const uploadedImagesData= ref([])
+const pendingImages = ref(null)
 
 const emit = defineEmits([
   'onImagesUploaded',
 ])
 
 const canUpload = computed(() => {
-  return productImageFiles.value !== null
+  return pendingImages.value !== null
 })
 
 const submitHandler = async () => {
   try {
-    const productData = {
-      title: '',
-      amount: 1,
-      imageFiles: productImageFiles.value
-    }
-    const dismissNotification = triggerSpinner('loading...')
-    urlsOfUploadedImages.value = []
-    urlsOfUploadedImages.value = await uploadProductToFirebase(productData)
-    if (urlsOfUploadedImages.value) { dismissNotification() }
-    console.log('[FirebaseUpload] recieved', urlsOfUploadedImages.value)
-    emit('onImagesUploaded', urlsOfUploadedImages.value);
+    const dismissNotification = triggerSpinner('loading images...')
+    uploadedImagesData.value = []
+    uploadedImagesData.value = await uploadImagesToFirebaseStorage(pendingImages.value)
+    if (uploadedImagesData.value) dismissNotification()
+    emit('onImagesUploaded', uploadedImagesData.value)
+    pendingImages.value = null
   } catch (error) {
     console.warn({ error })
   }

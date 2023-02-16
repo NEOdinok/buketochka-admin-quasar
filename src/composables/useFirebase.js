@@ -88,7 +88,6 @@ export function useFirebase() {
     } catch (error) {
       console.warn({ error })
     }
-
   }
 
   async function createSubcategoryInFirebase(parentCategoryId, newSubCategory) {
@@ -114,6 +113,15 @@ export function useFirebase() {
     }
   }
 
+  async function createProductInFirebase(productData) {
+    try {
+      console.log('[useFirebase] bout to create product: ', productData)
+      await addDoc(collection(db, "users", auth.currentUser.uid, "products"), productData)
+    } catch (error) {
+      console.warn({ error })
+    }
+  }
+
   return {
     getCategoryDocsFromFirebase,
     updateCategoryInFirebase,
@@ -123,6 +131,7 @@ export function useFirebase() {
     getSubcategoryDocsFromFirebase,
     deleteSubcategoryFromFirebase,
     updateSubcategoryInFirebase,
+    createProductInFirebase,
   }
 
 }
