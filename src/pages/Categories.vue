@@ -28,6 +28,7 @@ async function categoriesHandler() {
 }
 
 </script>
+
 <template>
   <q-page>
     <div class="row justify-center">

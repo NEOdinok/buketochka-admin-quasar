@@ -216,7 +216,8 @@ const submitHandler = async () => {
         category: selectedCategory.value,
         subCategory: selectedSubCategory.value,
         description: state.productDescription,
-        imagesData: {...imagesData.value}
+        imagesData: {...imagesData.value},
+        imageUrls: imageUrls.value,
       }
       await createProductInFirebase(productData)
       triggerPositive(`Product ${productData.name} created`)
