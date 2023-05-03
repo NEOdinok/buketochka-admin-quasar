@@ -66,8 +66,9 @@
 
     <q-dialog v-model="showDialog">
       <Modal
-        @modalCancel="showDialog = false"
-        @modalSubmitDelete="deleteCategory"
+        v-model:open="showDialog"
+        @cancel="showDialog = false"
+        @submit="deleteCategory"
       >
         <q-avatar icon="error" color="red" text-color="white"/>
         <span class="q-ml-sm">Are you sure you want to delete <b>{{ state.categoryName }}</b> ?</span>

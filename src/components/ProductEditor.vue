@@ -193,7 +193,7 @@ const rules = {
   productPrice: { required, integer, minValue: minValue(1), $lazy: true },
   productQuantity: { required, integer, minValue: minValue(1), $lazy: true },
   productCategory: { required, $lazy: true },
-  productSubCategory: { required, $lazy: true },
+  productSubCategory: { $lazy: false },
   productDescription: { required, $lazy: true },
 }
 
@@ -216,7 +216,7 @@ const submitHandler = async () => {
         category: selectedCategory.value,
         subCategory: selectedSubCategory.value,
         description: state.productDescription,
-        imagesData: {...imagesData.value},
+        imagesData: imagesData.value,
         imageUrls: imageUrls.value,
       }
       await createProductInFirebase(productData)
