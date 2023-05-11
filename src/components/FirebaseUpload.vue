@@ -1,6 +1,6 @@
 <template>
 <div class="">
-
+<!-- test -->
   <q-file
     v-model="pendingImages"
     label="Add images to upload"
