@@ -1,10 +1,10 @@
 <template>
   <q-layout view="hHh Lpr lff">
     <q-header elevated class="bg-black">
-      <q-toolbar>
+      <q-toolbar class="toolbar">
         <q-btn flat @click="toggleLeftDrawer" round dense icon="menu" />
         <q-toolbar-title>{{ headerTitle }}</q-toolbar-title>
-        <!-- <div>{{ headerDate }}</div> -->
+        <div class="headerDate">{{ headerDate }}</div>
         <q-btn-dropdown
           outline
           rounded
@@ -12,19 +12,11 @@
           color="purple-4"
         >
           <div class="row no-wrap q-pa-md">
-            <!-- <div class="column">
-              <div class="text-h6 q-mb-md">Settings</div>
-              <q-toggle v-model="mobileData" label="Use Mobile Data" />
-              <q-toggle v-model="bluetooth" label="Bluetooth" />
-            </div>
-
-            <q-separator vertical inset class="q-mx-lg" />
-
-            -->
 
             <div class="column items-center">
               <q-avatar size="72px">
-                <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+                <!-- <img src="https://cdn.quasar.dev/img/boy-avatar.png"> -->
+                <img src="../../src/assets/imgs/blankAvatar.webp" alt="">
               </q-avatar>
 
               <div class="items-right">
@@ -144,6 +136,7 @@ export default {
         router.push({ path: '/login' })
       }).catch((error) => {
         throw error;
+        console.warn({error});
       });
     }
 
@@ -168,10 +161,15 @@ export default {
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
       },
-      // drawer: ref(true),
       menuList
     }
 
   }
 }
 </script>
+
+<style lang="scss">
+.headerDate {
+  margin-right: 2rem;
+}
+</style>

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { app } from '../../firebaseConfig'
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 
 export const useCatStore = defineStore('catStore', {
@@ -20,7 +20,5 @@ export const useCatStore = defineStore('catStore', {
     increment () {
       this.counter++
     },
-
-
   }
 })

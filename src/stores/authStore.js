@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { app } from '../../firebaseConfig'
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 
 export const useAuthStore = defineStore('authStore', {
@@ -27,18 +27,6 @@ export const useAuthStore = defineStore('authStore', {
 
       const user = auth.currentUser
       return user ? user.uid : null
-
-      // works
-      // onAuthStateChanged(auth, (user) => {
-      //   console.log('[authStore] authStateChanged', user.uid)
-
-      //   if (user) {
-      //     return user.uid
-      //   } else {
-      //     return null
-      //   }
-
-      // })
     }
   }
 })

@@ -1,163 +1,156 @@
-<script>
-</script>
-
 <template>
-  <!-- <div class="q-pa-md">
-    <div class="column full-height">
-      <div class="col">
-        <q-carousel
-          v-model="slide"
-          transition-prev="scale"
-          transition-next="scale"
-          swipeable
-          animated
-          control-color="white"
-          navigation
-          padding
-          arrows
-          height="300px"
-          class="bg-primary text-white shadow-1 rounded-borders"
-        >
-          <q-carousel-slide name="style" class="column no-wrap flex-center">
-            <q-icon name="style" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="tv" class="column no-wrap flex-center">
-            <q-icon name="live_tv" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="layers" class="column no-wrap flex-center">
-            <q-icon name="layers" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="map" class="column no-wrap flex-center">
-            <q-icon name="terrain" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-        </q-carousel>
-      </div>
+  <div class="q-pa-md">
+    <q-form ref="productRightForm">
+      <q-carousel
+        v-model="urlOfCurrentSlideImage"
 
-      <div class="q-tp-md">
-        <div class="row">
-          <div class="col">
-            <q-btn unelevated rounded size="lg" class="full-width" align="between" icon-right="add" color="primary" label="Add" />
+        transition-prev="jump-right"
+        transition-next="jump-left"
+        animated
+        control-color="white"
+        prev-icon="arrow_left"
+        next-icon="arrow_right"
+        :thumbnails="imageUrls.length != 0"
+        infinite
+        height="300px"
+        class="bg-primary text-white shadow-1 rounded-borders"
+      >
+        <q-carousel-slide v-if="imageUrls.length != 0" v-for="(url, i) in imageUrls" :name="url" :img-src="url">
+          <div v-if="currentImageIsMain" class="absolute-top custom-caption">
+            <div class="text-h2">Main photo</div>
           </div>
-          <div class="col">
-            <q-btn unelevated rounded size="lg" class="full-width" align="between" icon-right="add" color="primary" label="Add" />
+        </q-carousel-slide>
+
+        <q-carousel-slide v-else name="blank" class="column no-wrap flex-center">
+          <q-icon name="image" size="56px" />
+          <div class="q-mt-md text-center">
+            Add product images below
           </div>
-        </div>
+        </q-carousel-slide>
+      </q-carousel>
+
+      <div class="row q-gutter-sm q-pt-md">
+        <q-btn
+          unelevated
+          rounded
+          align="between"
+          icon-right="delete"
+          color="primary"
+          label="Remove"
+          :disable="imageUrls.length == 0"
+        />
+
+        <q-btn
+          unelevated
+          rounded
+          align="between"
+          icon-right="image"
+          color="primary"
+          label="Set as main"
+          :disable="imageUrls.length == 0"
+          @click="updateMainImage"
+        />
+
       </div>
+    </q-form>
 
-      <div class="col self-end">
-        <q-btn unelevated rounded size="lg" class="full-width" align="between" icon-right="add" color="primary" label="Done" />
-      </div>
+    <FirebaseUpload
+      @onImagesUploaded="handleUploadedImages"
+    />
 
-    </div>
-  </div> -->
-
-  <div class="q-pa-md row full-height">
-    <div class="column justify-between full-width">
-      <div class="col column full-height">
-        <q-carousel
-          v-model="slide"
-          transition-prev="scale"
-          transition-next="scale"
-          swipeable
-          animated
-          control-color="white"
-          navigation
-          padding
-          arrows
-          height="300px"
-          class="bg-primary text-white shadow-1 rounded-borders"
-        >
-          <q-carousel-slide name="style" class="column no-wrap flex-center">
-            <q-icon name="style" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="tv" class="column no-wrap flex-center">
-            <q-icon name="live_tv" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="layers" class="column no-wrap flex-center">
-            <q-icon name="layers" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="map" class="column no-wrap flex-center">
-            <q-icon name="terrain" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-        </q-carousel>
-
-        <div class="q-pt-md">
-          <div class="row q-gutter-md no-wrap">
-              <q-btn unelevated rounded class="col" size="md" align="between" icon-right="add" color="primary" label="Add more" />
-              <q-btn unelevated rounded class="col" size="md" align="between" icon-right="delete" color="primary" label="Delete current" />
-          </div>
-        </div>
-      </div>
-
-      <div class="q-pt-xl">
-        <q-btn unelevated size="lg" class="full-width disabled" align="between" icon-right="check" color="primary" label="Done" />
-      </div>
-    </div>
   </div>
 </template>
 
-<style>
-</style>
+<script setup>
+import { ref, watch, reactive } from 'vue'
+import FirebaseUpload from './FirebaseUpload.vue'
+import { useFirestoreDatabase } from 'src/composables/useFirestoreDatabase'
+import { required } from '@vuelidate/validators'
+const { updateMainImageInFirebase } = useFirestoreDatabase()
+const urlOfCurrentSlideImage = ref('blank')
+const currentMainImageObj = ref(null)
+const currentImageIsMain = ref(false)
+const imagesData = ref(null)
+const imageUrls = ref([])
 
-        <!-- <q-carousel
-          v-model="slide"
-          transition-prev="scale"
-          transition-next="scale"
-          swipeable
-          animated
-          control-color="white"
-          navigation
-          padding
-          arrows
-          height="300px"
-          class="bg-primary text-white shadow-1 rounded-borders"
-        >
-          <q-carousel-slide name="style" class="column no-wrap flex-center">
-            <q-icon name="style" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="tv" class="column no-wrap flex-center">
-            <q-icon name="live_tv" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="layers" class="column no-wrap flex-center">
-            <q-icon name="layers" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-          <q-carousel-slide name="map" class="column no-wrap flex-center">
-            <q-icon name="terrain" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-        </q-carousel> -->
+const state = reactive({
+  productName: '',
+  productPrice: '',
+  productQuantity: '',
+  productdCategory: '',
+  productDescription: '',
+  productCategory: '',
+  productSubCategory: ''
+
+})
+
+const rules = {
+  productName: '',
+  productPrice: '',
+  productQuantity: '',
+  productdCategory: '',
+  productDescription: '',
+  productCategory: '',
+  productSubCategory: ''
+}
+
+watch(urlOfCurrentSlideImage, (newUrl) => {
+  console.log('[watcher] started, newUrl: ', newUrl)
+  console.log('[watcher] imagesData', imagesData.value)
+  let foundImageObj = imagesData.value.find(imgObj => imgObj.url == newUrl)
+  console.log('[watcher] found obj with newUrl: ', foundImageObj)
+
+  if (foundImageObj.isMain == 'true') {
+    currentImageIsMain.value = true
+  } else {
+    currentImageIsMain.value = false
+  }
+})
+
+const updateMainImage = async () => {
+  findAndRemoveCurrentMainImage()
+  let foundImageObj = imagesData.value.find(imgObj => imgObj.url == urlOfCurrentSlideImage.value)
+  let indexOfUpdatedObject = imagesData.value.indexOf(foundImageObj)
+  let updatedImageDataObj = await updateMainImageInFirebase(currentMainImageObj.value, foundImageObj)
+  imagesData.value[indexOfUpdatedObject] = updatedImageDataObj
+  console.log('[productRight] updateMainInFirebase returned:', updatedImageDataObj)
+  currentImageIsMain.value = true
+}
+
+const findAndRemoveCurrentMainImage= () => {
+  let currentMainImageObj = imagesData.value.find(imgObj => imgObj.isMain == 'true')
+
+  if (!currentMainImageObj) {
+    console.log('search found no local main')
+  } else {
+    currentMainImageObj.isMain = false
+    let indexOfcurrentMainImageObj = imagesData.value.indexOf(currentMainImageObj)
+    imagesData.value[indexOfcurrentMainImageObj] = currentMainImageObj
+    console.log('found and removed local main')
+  }
+}
+
+const handleUploadedImages = (uploadedImagesData) => {
+  imagesData.value = uploadedImagesData
+  imagesData.value.forEach(imageDataObject => {
+    imageUrls.value.push(imageDataObject.url)
+  })
+  urlOfCurrentSlideImage.value = imagesData.value[0].url
+  let foundImageObj = imagesData.value.find(imgObj => imgObj.isMain == true)
+  if (foundImageObj) {
+    currentMainImageObj.value = foundImageObj
+  } else {
+    //
+  }
+}
+
+</script>
+
+<style lang="scss">
+.custom-caption {
+  text-align: center;
+  padding: 12px;
+  color: white;
+  background-color: rgba(0, 0, 0, .3);
+}
+</style>

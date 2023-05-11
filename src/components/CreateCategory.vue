@@ -1,11 +1,32 @@
 <template>
   <div class="q-pa-md">
-    <div class="q-gutter-md">
-      <h5>Create new product category</h5>
+    <h5 class="q-pb-md">Create new product category</h5>
+    <q-form
+      ref="createCategoryForm"
+      @submit="formValidate"
+    >
+      <q-input
+        class="q-pb-lg"
+        v-model="categoryName"
+        outlined
+        label="Category name *"
+        lazy-rules="ondemand"
+        :rules="[
+          (val) => (val && val.length > 0) || 'Name must be filled',
+        ]"
+      />
 
-      <q-input v-model="categoryName" outlined label="Category name" />
-
-      <q-input v-model="categoryRoute" outlined label="Route for category" />
+      <q-input
+        class="q-pb-lg"
+        v-model="categoryRoute"
+        outlined
+        label="Route for category *"
+        prefix="/"
+        lazy-rules='ondemand'
+        :rules="[
+          (val) => (val && val.length > 0) || 'Route must be filled in.',
+        ]"
+      />
 
       <q-btn
         unelevated
@@ -14,40 +35,55 @@
         icon-right="check"
         color="primary"
         label="Create"
-        @click="createCategory"
+        type="submit"
       />
-    </div>
+
+    </q-form>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
+import { useNotifications } from 'src/composables/useNotifications';
+import { useAuthStore } from '../stores/authStore';
 
 const { createCategoryInFirebase } = useFirebase()
+const { triggerNegative, triggerPositive } = useNotifications()
 const emit = defineEmits(['createdCategory'])
-const categoryName = ref('')
-const categoryRoute = ref('')
+const categoryName = ref(null)
+const categoryRoute = ref(null)
+const createCategoryForm = ref(null)
+const authStore = useAuthStore();
+
+const formReset = () => {
+  categoryName.value = null
+  categoryRoute.value = null
+  createCategoryForm.value.reset()
+}
+
+function formValidate () {
+  createCategoryForm.value.validate().then(success => {
+    if (success) {
+      createCategory()
+    }
+    else {
+      triggerNegative('Please, fill in all the fields')
+    }
+  })
+}
 
 const createCategory = async () => {
-  if (!categoryName.value || !categoryRoute.value) {
-    console.log('fill in all the fields')
-  } else {
-    let newCategory = {
-      categoryName: categoryName.value,
-      categoryRoute: categoryRoute.value
-    }
-
-    await createCategoryInFirebase(newCategory)
-
-    categoryName.value = ''
-    categoryRoute.value = ''
-
-    emit('createdCategory')
+  let newCategory = {
+    categoryName: categoryName.value,
+    categoryRoute: categoryRoute.value
   }
+  await createCategoryInFirebase(newCategory)
+  triggerPositive(`Category ${categoryName.value} created`)
+  emit('createdCategory')
+  formReset()
 }
 </script>
-
 
 <style>
 </style>
