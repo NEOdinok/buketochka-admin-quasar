@@ -3,9 +3,10 @@ import CreateCategory from '../components/CreateCategory.vue'
 import EditCategory from '../components/EditCategory.vue'
 import { useFirebase } from 'src/composables/useFirebase';
 import { onMounted, ref } from 'vue';
+import { useAuthStore } from 'src/stores/authStore';
 
+const authStore = useAuthStore();
 const categories = ref([])
-
 const { getCategoryDocsFromFirebase } = useFirebase()
 
 onMounted(async () => {
@@ -26,7 +27,6 @@ async function categoriesHandler() {
     console.error({error})
   }
 }
-
 </script>
 
 <template>
@@ -46,6 +46,8 @@ async function categoriesHandler() {
       </div>
     </div>
   </q-page>
+
+
 </template>
 
 <style lang="scss">

@@ -14,6 +14,12 @@ onMounted(() => {
   const auth = getAuth(app)
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      console.log('authState', user.email);
+      authStore.userInfo = {
+        name: user.name,
+        email: user.email,
+        uid: user.uid,
+      }
       authStore.isLoggedIn = true
     } else {
       authStore.isLoggedIn = false

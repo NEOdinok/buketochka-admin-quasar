@@ -37,6 +37,7 @@
         label="Create"
         type="submit"
       />
+
     </q-form>
   </div>
 </template>
@@ -45,6 +46,7 @@
 import { ref } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications';
+import { useAuthStore } from '../stores/authStore';
 
 const { createCategoryInFirebase } = useFirebase()
 const { triggerNegative, triggerPositive } = useNotifications()
@@ -52,6 +54,7 @@ const emit = defineEmits(['createdCategory'])
 const categoryName = ref(null)
 const categoryRoute = ref(null)
 const createCategoryForm = ref(null)
+const authStore = useAuthStore();
 
 const formReset = () => {
   categoryName.value = null

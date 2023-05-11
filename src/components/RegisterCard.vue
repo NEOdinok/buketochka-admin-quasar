@@ -7,7 +7,6 @@
       <div class="row">
         <q-card square dark class="q-pa-md q-ma-none no-shadow bg-grey-10" style="width:320px;">
           <q-card-section class="q-mt-md q-mb-md">
-            <!-- <p class="text-weight-bolder text-grey">Log Into Admin</p> -->
             <h5 class="q-mt-none q-mb-none">Create admin account</h5>
           </q-card-section>
 
@@ -39,10 +38,6 @@
               <div class="col-6">
                 <q-btn type="submit" form="register-form" outline rounded size="md" color="purple-4" class="full-width text-white" label="Create" />
               </div>
-
-              <!-- <div class="col-6">
-                <p class="text-no-wrap text-grey text-caption text-right">Forgot password?</p>
-              </div> -->
             </div>
           </q-card-actions>
           <q-card-section>
@@ -80,12 +75,9 @@
 
   createUserWithEmailAndPassword(auth, email.value, password.value, name.value)
     .then((cred) => {
-      //create a record in firestore
       return setDoc(doc(db, "users", cred.user.uid), {
         name: name.value,
         email: email.value,
-        ordersCount: 0,
-        ordersAmount: 0
       })
     })
     .then(() => {
@@ -93,12 +85,13 @@
       authStore.userInfo = {
         name: name.value,
         email: email.value,
-        uid: auth.currentUser.uid
+        uid: auth.currentUser.uid,
       }
       //set user insatnce data
       return updateProfile(auth.currentUser, {
         displayName: name.value,
         email: email.value,
+        uid: auth.currentUser.uid,
       })
     })
     .then(() => {

@@ -161,7 +161,9 @@ import { required, integer, minValue } from '@vuelidate/validators'
 import FirebaseUpload from './FirebaseUpload.vue'
 import { useFirestoreDatabase } from 'src/composables/useFirestoreDatabase'
 import { useNotifications } from 'src/composables/useNotifications';
+import { useAuthStore } from 'src/stores/authStore';
 
+const authStore = useAuthStore();
 const { getCategoryDocsFromFirebase, getSubcategoryDocsFromFirebase, createProductInFirebase } = useFirebase()
 const { updateMainImageInFirebase, removeImageFromFirebaseStorage } = useFirestoreDatabase()
 const { triggerNegative, triggerPositive } = useNotifications()

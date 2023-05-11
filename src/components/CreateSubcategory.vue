@@ -56,6 +56,7 @@
 import { ref, watch } from 'vue';
 import { useFirebase } from 'src/composables/useFirebase';
 import { useNotifications } from 'src/composables/useNotifications';
+import { useAuthStore } from '../stores/authStore';
 
 const { triggerPositive, triggerNegative } = useNotifications()
 const { createSubcategoryInFirebase } = useFirebase()
@@ -65,6 +66,7 @@ const categoriesQselectOptions = ref([])
 const subCategoryName = ref(null)
 const subCategoryRoute = ref(null)
 const createSubcategoryForm = ref(null)
+const authStore = useAuthStore();
 
 const props = defineProps({
   propCategories: {

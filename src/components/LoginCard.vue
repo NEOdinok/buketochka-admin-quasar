@@ -7,7 +7,6 @@
       <div class="row">
         <q-card square dark class="q-pa-md q-ma-none no-shadow bg-grey-10" style="width:320px;">
           <q-card-section class="q-mt-md q-mb-md">
-            <!-- <p class="text-weight-bolder text-grey">Log Into Admin</p> -->
             <h5 class="q-mt-none q-mb-none">Log into admin</h5>
           </q-card-section>
 
@@ -31,10 +30,6 @@
               <div class="col-6">
                 <q-btn type="submit" form="login-form" outline rounded size="md" color="purple-4" class="full-width text-white" label="Sign In" />
               </div>
-
-              <!-- <div class="col-6">
-                <p class="text-no-wrap text-grey text-caption text-right">Forgot password?</p>
-              </div> -->
             </div>
           </q-card-actions>
           <q-card-section>
@@ -73,26 +68,15 @@ const submitHandler = async () => {
       authStore.userInfo = {
         name: cred.user.displayName,
         email: cred.user.email,
-        uid: cred.user.uid
+        uid: cred.user.uid,
       }
     })
     .then(() => {
       router.push({ path: '/' })
     })
     .catch((error) => {
-
+      console.warn({error});
     });
-
-  // signInWithEmailAndPassword(auth, email.value, password.value).then((cred) => {
-  //   authStore.userInfo = {
-  //     name: cred.user.displayName,
-  //     email: cred.user.email
-  //   }
-  //   router.push({ path: '/' })
-  // })
-  // .catch((error) => {
-  //   throw error
-  // });
 }
 </script>
 
