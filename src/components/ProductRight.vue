@@ -95,10 +95,7 @@ const rules = {
 }
 
 watch(urlOfCurrentSlideImage, (newUrl) => {
-  console.log('[watcher] started, newUrl: ', newUrl)
-  console.log('[watcher] imagesData', imagesData.value)
   let foundImageObj = imagesData.value.find(imgObj => imgObj.url == newUrl)
-  console.log('[watcher] found obj with newUrl: ', foundImageObj)
 
   if (foundImageObj.isMain == 'true') {
     currentImageIsMain.value = true
@@ -113,7 +110,6 @@ const updateMainImage = async () => {
   let indexOfUpdatedObject = imagesData.value.indexOf(foundImageObj)
   let updatedImageDataObj = await updateMainImageInFirebase(currentMainImageObj.value, foundImageObj)
   imagesData.value[indexOfUpdatedObject] = updatedImageDataObj
-  console.log('[productRight] updateMainInFirebase returned:', updatedImageDataObj)
   currentImageIsMain.value = true
 }
 
@@ -121,12 +117,10 @@ const findAndRemoveCurrentMainImage= () => {
   let currentMainImageObj = imagesData.value.find(imgObj => imgObj.isMain == 'true')
 
   if (!currentMainImageObj) {
-    console.log('search found no local main')
   } else {
     currentMainImageObj.isMain = false
     let indexOfcurrentMainImageObj = imagesData.value.indexOf(currentMainImageObj)
     imagesData.value[indexOfcurrentMainImageObj] = currentMainImageObj
-    console.log('found and removed local main')
   }
 }
 

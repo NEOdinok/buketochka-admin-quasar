@@ -1,5 +1,12 @@
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+  updateMetadata,
+  deleteObject
+} from "firebase/storage";
 import { app } from "../../firebaseConfig"
-import { getStorage, ref, getDownloadURL, uploadBytesResumable, updateMetadata, deleteObject } from "firebase/storage";
 
 export function useFirestoreDatabase() {
   const storage = getStorage(app)
@@ -72,9 +79,10 @@ export function useFirestoreDatabase() {
   }
 
   async function removeImageFromFirebaseStorage(image) {
+    console.log('composable deletes', image.storageRef);
     try {
       const imageRef = ref(storage, image.storageRef)
-      await deleteObject(imageRef)
+      await deleteObject(imageRef);
     } catch (error) {
       console.warn({ error })
     }

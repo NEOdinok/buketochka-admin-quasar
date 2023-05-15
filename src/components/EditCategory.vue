@@ -61,7 +61,6 @@
 
         </div>
       </div>
-
     </q-form>
 
     <q-dialog v-model="showDialog">
@@ -88,7 +87,7 @@ import { required, integer, minValue } from '@vuelidate/validators'
 const { updateCategoryInFirebase, deleteCategoryFromFirebase } = useFirebase()
 const { triggerPositive, triggerNegative } = useNotifications()
 const categoryIdBeforeUpdate = ref('')
-const selectedCategoryId= ref(null)
+const selectedCategoryId = ref(null)
 const categoriesQselectOptions = ref([])
 const categoryName = ref(null)
 const categoryRoute = ref(null)
@@ -210,7 +209,6 @@ watch(selectedCategoryId, (newCategoryId) => {
 })
 </script>
 
-<style>
-
+<style lang="scss">
 </style>
 

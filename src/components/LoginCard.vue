@@ -60,6 +60,7 @@ const router = useRouter()
 const submitHandler = async () => {
   const auth = getAuth(app);
 
+
   setPersistence(auth, browserLocalPersistence)
     .then(() => {
       return signInWithEmailAndPassword(auth, email.value, password.value)

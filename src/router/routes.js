@@ -1,4 +1,3 @@
-
 const routes = [
   {
     path: '/',
@@ -7,7 +6,15 @@ const routes = [
     children: [
       { path: '', component: () => import('src/pages/Categories.vue') },
       { path: 'subcategories', component: () => import('pages/Subcategories.vue') },
-      { path: 'products', component: () => import('pages/Products.vue') }
+      {
+        path: 'products',
+        children: [
+          { path: '', name: "products", component: () => import('pages/ProductList.vue') },
+          { path: 'edit/:id', name: "editProduct", component: () => import('pages/ProductPage.vue') },
+          { path: 'create', name: "createProduct", component: () => import('pages/CreateProductPage.vue') },
+        ],
+      },
+      // { path: '/create-product', name: "createProduct", component: () => import('pages/ProductPage.vue') },
     ]
   },
   {

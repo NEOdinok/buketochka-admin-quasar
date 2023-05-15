@@ -137,15 +137,15 @@
             @onImagesUploaded="handleUploadedImages"
           />
 
-            <q-btn
-              unelevated
-              rounded
-              align="between"
-              icon-right="check"
-              color="primary"
-              label="create product"
-              type="submit"
-            />
+          <q-btn
+            unelevated
+            rounded
+            align="between"
+            icon-right="check"
+            color="primary"
+            label="create product"
+            type="submit"
+          />
 
         </div>
       </div>
@@ -200,6 +200,17 @@ const rules = {
 }
 
 const v$ = useVuelidate(rules, state)
+
+const props = defineProps({
+  productId: {
+    type: String,
+    required: false,
+  }
+})
+
+onMounted(() => {
+  console.warn(props.productId);
+})
 
 const submitHandler = async () => {
   try {

@@ -49,30 +49,6 @@ async function subCategoriesHandler(parentCategoryId) {
       </div>
     </div>
   </q-page>
-
-  <!-- <q-page v-if="authStore.userInfo.isAdmin == true">
-    <div class="row justify-center">
-      <div class="col-12 col-sm-6 col-md-4">
-        <CreateSubcategory
-          :categories="categories"
-          v-on:createdSubcategory="subCategoriesHandler"
-        />
-      </div>
-      <div class="col-12 col-sm-6 col-md-4">
-        <EditSubcategory
-          :categories="categories"
-          :subcategories="subcategories"
-          @updatedSubcategory="subCategoriesHandler"
-          @selectedNewParentCategory="subCategoriesHandler"
-          @deletedSubcategory="subCategoriesHandler"
-        />
-      </div>
-    </div>
-  </q-page> -->
-
-  <!-- <q-page v-else class="row justify-center full-height full-width text-center">
-    <div class="self-center row full-height justify-center text-h5">Sorry, you lack admin rights..</div>
-  </q-page> -->
 </template>
 
 
