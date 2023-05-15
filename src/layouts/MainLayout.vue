@@ -49,7 +49,6 @@
     >
       <q-scroll-area class="fit">
         <q-list>
-
           <template v-for="(menuItem, index) in menuList" :key="index">
             <q-item clickable v-ripple :to="menuItem.route">
               <q-item-section avatar>
@@ -95,10 +94,16 @@ const menuList = [
     separator: false,
     route: '/subcategories'
   },
+  // {
+  //   icon: 'inventory',
+  //   label: 'Product',
+  //   separator: false,
+  //   route: '/products'
+  // },
   {
-    icon: 'inventory',
-    label: 'Product',
-    separator: false,
+    icon: 'edit',
+    label: 'Products',
+    separator: true,
     route: '/products'
   },
 ]

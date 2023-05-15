@@ -20,8 +20,8 @@ onMounted(async () => {
 
 async function categoriesHandler() {
   try {
-   const { categoriesData } = await getCategoryDocsFromFirebase()
-   categories.value = categoriesData.value
+   const { categoriesData } = await getCategoryDocsFromFirebase();
+   categories.value = categoriesData.value;
 
   } catch (error) {
     console.error({error})
@@ -39,9 +39,9 @@ async function categoriesHandler() {
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <EditCategory
-        :categories="categories"
-        @updatedCategory="categoriesHandler"
-        @deletedCategory="categoriesHandler"
+          :categories="categories"
+          @updatedCategory="categoriesHandler"
+          @deletedCategory="categoriesHandler"
         />
       </div>
     </div>

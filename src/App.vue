@@ -14,7 +14,6 @@ onMounted(() => {
   const auth = getAuth(app)
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      console.log('authState', user.email);
       authStore.userInfo = {
         name: user.name,
         email: user.email,
