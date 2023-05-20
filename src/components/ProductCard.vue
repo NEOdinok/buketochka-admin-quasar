@@ -5,7 +5,6 @@ import { useNotifications } from 'src/composables/useNotifications';
 import { useFirestoreDatabase } from 'src/composables/useFirestoreDatabase';
 import { useFirebase } from 'src/composables/useFirebase';
 import {useRouter} from 'vue-router';
-const { removeImageFromFirebaseStorage } = useFirestoreDatabase();
 const { deleteProductFromFirebase } = useFirebase();
 const { triggerPositive } = useNotifications();
 const showDialog = ref(false);
@@ -51,7 +50,6 @@ const handleDelete = async () => {
 
   if (showDialog.value == false) {
     try {
-      props.imagesData.map(async img => await removeImageFromFirebaseStorage(img));
       await deleteProductFromFirebase(props.id);
       triggerPositive(`${props.name} product deleted`);
       emit('productDelete');
@@ -64,7 +62,7 @@ const handleDelete = async () => {
 
 <template>
   <q-card>
-    <q-img :src="props.mainImgUrl" ratio="1" fit="cover">
+    <q-img :src="props.mainImgUrl" ratio="1" fit="cover" spinner-color="primary">
       <div class="absolute-bottom">
         <div class="text-h6">{{ props.name }}</div>
         <div class="text-subtitle2">{{ props.price }} ₽</div>

@@ -126,7 +126,8 @@ export function useFirebase() {
 
   async function createProductInFirebase(productData) {
     try {
-      await addDoc(collection(db, "products"), productData)
+      const docRef = await addDoc(collection(db, "products"), productData)
+      return docRef.id;
     } catch (error) {
       console.warn({ error })
     }
@@ -152,16 +153,33 @@ export function useFirebase() {
     try {
       const docRef = doc(db, "products", productId);
       const docSnap = await getDoc(docRef);
-      //first, delete all images by refs
       docSnap.data().imagesData.forEach(async img => {
-        // console.log('img ref:', img.storageRef);
         await removeImageFromFirebaseStorage(img);
       })
-      //second, delete product record
       await deleteDoc(docRef);
 
     } catch (error) {
       console.warn({ error })
+    }
+  }
+
+  async function getProductFromFirebase(productId) {
+    try {
+      const docRef = doc(db, "products", productId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.data();
+    } catch (error) {
+      console.warn({ error });
+    }
+  }
+
+  async function updateProductInFirebase(productId, newProduct) {
+    try {
+      console.log('updating with:', productId);
+      const categoryRef = doc(db, "products", productId)
+      await setDoc(categoryRef, newProduct)
+    } catch (error) {
+      console.warn({error})
     }
   }
 
@@ -177,5 +195,7 @@ export function useFirebase() {
     createProductInFirebase,
     getProductDocsFromFirebase,
     deleteProductFromFirebase,
+    getProductFromFirebase,
+    updateProductInFirebase,
   }
 }

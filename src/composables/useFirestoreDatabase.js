@@ -12,56 +12,51 @@ export function useFirestoreDatabase() {
   const storage = getStorage(app)
 
   //string, object
-  async function updateMainImageInFirebase(currentMainImgObj, newMainImgObj) {
-    try {
-      if (currentMainImgObj != null) {
-        const replacementMeta = {
-          customMetadata: {
-            isMain: false,
-            uid: currentMainImgObj.uid,
-            extension: currentMainImgObj.extension,
-            storageRef: currentMainImgObj.storageRef,
-            url: currentMainImgObj.url
-          }
-        }
-        const storageRef = ref(storage, currentMainImgObj.storageRef)
-        let uploadedMeta = await updateMetadata(storageRef, replacementMeta)
-      } else {
-
-        const newMetadata = {
-          customMetadata: {
-            isMain: true,
-            uid: newMainImgObj.uid,
-            extension: newMainImgObj.extension,
-            storageRef: newMainImgObj.storageRef,
-            url: newMainImgObj.url
-          }
-        }
-
-        const storageRef = ref(storage, newMainImgObj.storageRef)
-        const uploadedMeta = await updateMetadata(storageRef, newMetadata)
-        return { ...uploadedMeta.customMetadata }
-      }
-    } catch (error) {
-      console.warn({ error })
-    }
-  }
+  // async function updateMainImageInFirebase(currentMainImgObj, newMainImgObj) {
+  //   try {
+  //     if (currentMainImgObj != null) {
+  //       const replacementMeta = {
+  //         customMetadata: {
+  //           isMain: false,
+  //           uid: currentMainImgObj.uid,
+  //           extension: currentMainImgObj.extension,
+  //           storageRef: currentMainImgObj.storageRef,
+  //           url: currentMainImgObj.url
+  //         }
+  //       }
+  //       const storageRef = ref(storage, currentMainImgObj.storageRef)
+  //       let uploadedMeta = await updateMetadata(storageRef, replacementMeta)
+  //     } else {
+  //       const newMetadata = {
+  //         customMetadata: {
+  //           isMain: true,
+  //           uid: newMainImgObj.uid,
+  //           extension: newMainImgObj.extension,
+  //           storageRef: newMainImgObj.storageRef,
+  //           url: newMainImgObj.url
+  //         }
+  //       }
+  //       const storageRef = ref(storage, newMainImgObj.storageRef)
+  //       const uploadedMeta = await updateMetadata(storageRef, newMetadata)
+  //       return { ...uploadedMeta.customMetadata, isMain: true }
+  //     }
+  //   } catch (error) {
+  //     console.warn({ error })
+  //   }
+  // }
 
   async function uploadImagesToFirebaseStorage(images) {
     try {
       const promises = images.map(async (imageFile) => {
         const imageExt = imageFile.name.slice(imageFile.name.lastIndexOf('.'))
-
         const imageUid = generateUniqueImageId()
-
         const imageFileStorageRefString = `images/${imageUid}${imageExt}`
-
         const storageRef = ref(storage, imageFileStorageRefString)
 
         await uploadBytesResumable(storageRef, imageFile)
         const metadata = {
+          // isMain: false,
           customMetadata: {
-            isMain: false,
             uid: imageUid,
             extension: imageExt,
             storageRef: imageFileStorageRefString,
@@ -69,7 +64,7 @@ export function useFirestoreDatabase() {
         }
         const uploadedMeta = await updateMetadata(storageRef, metadata)
 
-        return { ...uploadedMeta.customMetadata, url: await getDownloadURL(storageRef) }
+        return { ...uploadedMeta.customMetadata, isMain: false, url: await getDownloadURL(storageRef) }
       })
 
       return Promise.all(promises)
@@ -79,7 +74,6 @@ export function useFirestoreDatabase() {
   }
 
   async function removeImageFromFirebaseStorage(image) {
-    console.log('composable deletes', image.storageRef);
     try {
       const imageRef = ref(storage, image.storageRef)
       await deleteObject(imageRef);
@@ -95,7 +89,6 @@ export function useFirestoreDatabase() {
   }
 
   return {
-    updateMainImageInFirebase,
     uploadImagesToFirebaseStorage,
     generateUniqueImageId,
     removeImageFromFirebaseStorage,

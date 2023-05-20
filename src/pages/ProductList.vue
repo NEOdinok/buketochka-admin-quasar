@@ -28,12 +28,12 @@
               icon-right="clear"
               color="primary"
               label="Clear"
+              :disabled="!selectedCategory"
               @click="clearFilters()"
             />
           </div>
 
           <div class="btnsRow">
-
             <q-btn
               no-caps
               class="createBtn btn"
@@ -44,19 +44,24 @@
               @click="redirectToCreateProduct"
             />
           </div>
-
         </div>
 
-        <div class="cardsSection ">
+        <div v-if="products.length !=0" class="cardsSection">
           <ProductCard
-            v-if="products.length !=0"
             v-for="(product, i) in filteredProducts"
             @productDelete="() => handleDelete()"
             :name="product.name"
             :price="+product.price"
-            :mainImgUrl="product.imagesData.filter(img => img.isMain === `true`)[0].url"
+            :mainImgUrl="product.imagesData.find(img => img.isMain === true).url"
             :imagesData="product.imagesData"
             :id="product.id"
+          />
+        </div>
+
+        <div class="spinnerWrap" v-else>
+          <q-spinner
+            color="primary"
+            size="3em"
           />
         </div>
       </div>
@@ -242,6 +247,11 @@ watch (subcategories, () => {
   .filtersRow {
     align-items: center;
   }
+}
+.spinnerWrap {
+  display: grid;
+  width: 100%;
+  place-content: center;
 }
 .btn {
   height: fit-content;
